@@ -1,0 +1,552 @@
+{
+  "info": {
+    "_postman_id": "smart-clinic-api-collection",
+    "name": "Smart Clinic API",
+    "description": "🏥 Smart Clinic Platform Overview\n\nThis platform is a comprehensive healthcare management system designed to streamline patient care, doctor scheduling, and clinic administration. It supports multiple user roles and provides tools for managing appointments, patient records, doctor schedules, and clinic operations.\n\n## 🚀 Core System Features\n\n### 1. Multi-Role User System\n\n#### User Types:\n• **Patient**: Can book appointments, view medical profile, update personal information\n• **Doctor**: Can manage schedule, view appointments, access patient profiles\n• **Admin**: Full system management permissions\n\n#### User Data:\n• **Basic Information**: Username, email, first name, last name\n• **Contact Details**: Phone number (Egyptian numbers only - 11 digits)\n• **Personal Data**: Date of birth, gender, address\n• **User Type**: Patient, doctor, or admin\n\n### 2. Doctor Management\n\n#### Doctor Information:\n• **Medical Specialization**: Cardiology, Dermatology, Neurology, Orthopedics, Pediatrics, Psychiatry, General, Dental, Eye, Surgery\n• **Professional Data**: License number, years of experience, consultation fee\n• **Biography**: Brief description of doctor's expertise\n• **Clinic**: Associated clinic information\n\n#### Doctor Schedule:\n• **Schedule Management**: Doctors can update working hours for each day\n• **Available Times**: Set start and end times for each day\n• **Availability Status**: Enable/disable doctor availability\n\n### 3. Patient Management\n\n#### Medical Profile:\n• **Medical History**: Previous and current medical conditions\n• **Allergies**: Substances the patient is allergic to\n• **Blood Type**: Patient's blood type\n• **Emergency Contact**: Name and phone number for emergency situations\n\n#### Access Permissions:\n• **Self Access**: Patients can only view and update their own profile\n• **Doctor Access**: Doctors can access all patient profiles\n• **Admin Access**: Admin has full permissions on all profiles\n\n### 4. Appointment System\n\n#### Booking Appointments:\n• **Browse Doctors**: View doctors by specialization\n• **Select Date & Time**: Choose from doctor's available slots\n• **Visit Reason**: Brief description of appointment purpose\n• **Appointment Status**: Pending, confirmed, cancelled, completed, no-show\n\n#### Appointment Management:\n• **For Patients**: View only their own appointments\n• **For Doctors**: View their appointments and update status\n• **For Admin**: Manage all appointments in the system\n\n### 5. Clinic Management\n\n#### Clinic Information:\n• **Basic Data**: Clinic name, address, phone, email\n• **Description**: Brief description of clinic and services\n• **Doctors**: List of doctors working at the clinic\n\n#### Permissions:\n• **Admin Only**: Add, update, delete clinics\n• **Read Access for All**: View clinic information\n\n### 6. Authentication & Security\n\n#### JWT Authentication:\n• **Access Token**: For API access (limited validity)\n• **Refresh Token**: To renew access tokens\n• **Request Protection**: All requests (except registration and login) require authentication\n\n#### Permission Verification:\n• **System-level Permissions**: Based on user type\n• **Object-level Permissions**: Access to personal data only\n• **Special Permissions**: Doctors can access patient profiles\n\n### 7. Data Validation\n\n#### Phone Number Validation:\n• **Length**: Must be exactly 11 digits\n• **Egyptian Numbers Only**: Supports local and international Egyptian numbers\n• **Valid Prefixes**: Validates number prefix correctness\n\n#### Appointment Validation:\n• **Availability**: Checks doctor availability at specified time\n• **Date**: Ensures appointment date is in the future\n• **Duplication**: Prevents double booking at same time\n\n### 8. API Features\n\n#### RESTful API:\n• **Standard Methods**: GET, POST, PUT, DELETE\n• **Unified Responses**: Consistent JSON format\n• **Status Codes**: Standard HTTP status codes\n\n#### Pagination & Filtering:\n• **Pagination**: Support for long lists\n• **Filtering**: Filter by specialization, date, status\n• **Search**: Ability to search through data\n\n### 9. Frontend Integration\n\n#### CORS Support:\n• **Angular Support**: CORS settings customized for frontend\n• **Cross-Origin Requests**: Support for requests from different domains\n• **Security**: Production-ready security settings\n\n#### Enhanced Responses:\n• **Data Formatting**: Format suitable for frontend\n• **Related Data**: Include related data in responses\n• **Clear Errors**: Clear and helpful error messages\n\n### 10. Production Settings\n\n#### Security:\n• **JWT Secrets**: Configurable secret keys\n• **CORS**: Security settings for cross-origin requests\n• **CSRF**: Protection against CSRF attacks\n\n#### Performance:\n• **Database**: PostgreSQL support for production\n• **Static Files**: Static and media file management\n• **Caching**: Caching settings\n\n#### Deployment:\n• **Environment Variables**: Configurable settings\n• **Docker**: Docker container support\n• **CI/CD**: Continuous integration/deployment support\n\n## 📋 Key API Endpoints Summary\n\n#### Authentication:\n• `POST /auth/register/` - User registration\n• `POST /auth/login/` - User login\n• `POST /auth/token/refresh/` - Token refresh\n• `GET /users/me/` - Current user data\n\n#### Doctors:\n• `GET /doctors/` - List all doctors\n• `GET /doctors/{id}/` - Doctor details\n• `PUT /doctors/schedule/{id}/` - Update schedule\n• `GET /doctors/available/` - Available doctors\n\n#### Patients:\n• `GET /patients/me/` - Patient profile\n• `PUT /patients/me/` - Update profile\n• `GET /patients/{id}/` - Specific patient (doctors/admin)\n\n#### Appointments:\n• `GET /appointments/` - List appointments\n• `POST /appointments/create/` - Create appointment\n• `GET /appointments/{id}/` - Appointment details\n• `PUT /appointments/{id}/` - Update appointment\n\n#### Admin:\n• `GET /admin/users/` - All users\n• `GET /admin/clinics/` - All clinics\n• `POST /admin/clinics/` - Add clinic\n\n## 🔐 Authentication\n\nAll routes are protected by JWT authentication and role-based authorization.\n\n## 💡 Usage Instructions\n\n1. **Start by registering a user or logging in**\n2. **Use the returned JWT token in Authorization header**: `Bearer {{access_token}}`\n3. **Access role-specific endpoints based on user type**\n4. **Test all endpoints with different user roles**\n5. **Verify permission restrictions work correctly**\n\n## 🧪 Testing Guidelines\n\n• **Use provided environment variables** for tokens and IDs\n• **Test all endpoints with different user roles**\n• **Verify permission restrictions** work correctly\n• **Test error scenarios** and validation\n• **Use sample data** for comprehensive testing\n\n## 📞 Support\n\nFor any questions or issues, please contact the development team.\n\n## 🔗 Base URL\n\nProduction: `https://your-domain.com/api/`\nDevelopment: `http://127.0.0.1:8000/api/`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Authentication and user management endpoints for the Smart Clinic platform.\n\nThese endpoints handle user registration, login, token refresh, and profile management.\n\n🔑 Key Features:\n• User registration with role selection (patient/doctor)\n• JWT-based authentication\n• Token refresh mechanism\n• User profile retrieval\n\n📝 Notes:\n• Registration requires Egyptian phone number (11 digits)\n• Passwords must meet security requirements\n• User types determine access permissions",
+      "item": [
+        {
+          "name": "Register User",
+          "description": "📝 Register a new user in the Smart Clinic system\n\nThis endpoint allows new users to register as either patients or doctors.\n\n🎯 Access: Public (no authentication required)\n\n📋 Required Fields:\n• username: Unique username for login\n• email: Valid email address\n• password: Secure password\n• password2: Password confirmation\n• first_name: User's first name\n• last_name: User's last name\n• user_type: 'patient' or 'doctor'\n• phone: Egyptian phone number (11 digits)\n• address: User's address\n• date_of_birth: Birth date (YYYY-MM-DD)\n• gender: 'M' for male, 'F' for female\n\n✅ Validation:\n• Phone number must be exactly 11 digits (Egyptian format)\n• Passwords must match\n• Email must be unique\n• Username must be unique\n\n🔒 Security:\n• Password is hashed before storage\n• User is automatically logged in after registration\n• JWT tokens are returned for immediate access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testpatient\",\n  \"email\": \"testpatient@example.com\",\n  \"password\": \"password123\",\n  \"password2\": \"password123\",\n  \"first_name\": \"أحمد\",\n  \"last_name\": \"محمد\",\n  \"user_type\": \"patient\",\n  \"phone\": \"01012345678\",\n  \"address\": \"القاهرة، مصر\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"gender\": \"M\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", ""]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "description": "🔑 Authenticate user and get JWT tokens\n\nThis endpoint authenticates users and returns access and refresh tokens for API access.\n\n🎯 Access: Public (no authentication required)\n\n📋 Required Fields:\n• username: User's username or email\n• password: User's password\n\n✅ Response:\n• access_token: JWT token for API authentication\n• refresh_token: Token for refreshing access token\n• user: User profile information\n\n🔒 Security:\n• Tokens are automatically stored in environment variables\n• Access token expires in 5 minutes\n• Refresh token expires in 1 day\n\n💡 Usage:\n• Use access_token in Authorization header: 'Bearer {{access_token}}'\n• Use refresh_token to get new access token when expired",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testpatient\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('access_token', response.tokens.access);",
+                  "    pm.environment.set('refresh_token', response.tokens.refresh);",
+                  "    pm.environment.set('user_id', response.user.id);",
+                  "    pm.environment.set('user_type', response.user.user_type);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "description": "🔄 Refresh expired access token\n\nThis endpoint allows users to get a new access token using their refresh token.\n\n🎯 Access: Public (requires valid refresh token)\n\n📋 Required Fields:\n• refresh: Valid refresh token\n\n✅ Response:\n• access: New JWT access token\n\n🔒 Security:\n• New access token expires in 5 minutes\n• Refresh token remains valid\n• Old access token becomes invalid\n\n💡 Usage:\n• Call this endpoint when access token expires (401 error)\n• Update environment variable with new access token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "token", "refresh", ""]
+            }
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "description": "👤 Get current user's profile information\n\nThis endpoint returns the authenticated user's complete profile data.\n\n🎯 Access: Authenticated users only\n\n📋 Headers Required:\n• Authorization: Bearer {{access_token}}\n\n✅ Response:\n• User profile with all details\n• Role-specific information (patient/doctor/admin)\n• Associated profile data\n\n🔒 Security:\n• Only returns current user's data\n• Requires valid JWT token\n\n💡 Usage:\n• Use to verify user authentication\n• Get user role and permissions\n• Retrieve profile for display/editing",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍⚕️ Doctors",
+      "description": "Doctor management and schedule endpoints for the Smart Clinic platform.\n\nThese endpoints handle doctor profiles, schedules, availability, and specializations.\n\n🔑 Key Features:\n• List all doctors with filtering\n• Get doctor details and schedules\n• Update doctor schedules\n• Check doctor availability\n• Filter by specialization\n\n📝 Notes:\n• Schedule updates require doctor authentication\n• Availability is checked in real-time\n• Specialization filtering supports multiple criteria",
+      "item": [
+        {
+          "name": "Get All Doctors",
+          "description": "📋 Retrieve list of all available doctors\n\nThis endpoint returns all doctors in the system with optional filtering by specialization.\n\n🎯 Access: Public (no authentication required)\n\n📋 Query Parameters:\n• specialization (optional): Filter by medical specialization\n\n✅ Response:\n• List of all doctors\n• Basic doctor information\n• Specialization and clinic details\n• Availability status\n\n🔍 Filtering:\n• Use ?specialization=Cardiology for specific fields\n• Multiple specializations supported\n• Case-insensitive search\n\n💡 Usage:\n• Use for doctor selection in appointment booking\n• Filter by specialization for targeted search\n• Check availability before booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors/",
+              "host": ["{{base_url}}"],
+              "path": ["doctors", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Details",
+          "description": "👨‍⚕️ Get detailed information about a specific doctor\n\nThis endpoint returns comprehensive information about a doctor including their schedule, clinic, and contact details.\n\n🎯 Access: Public (no authentication required)\n\n📋 Path Parameters:\n• id: Doctor's unique identifier\n\n✅ Response:\n• Complete doctor profile\n• Schedule information\n• Clinic details\n• Contact information\n• Specialization details\n\n🔍 Information Included:\n• Personal and professional details\n• Working hours and availability\n• Clinic location and contact\n• License and qualifications\n\n💡 Usage:\n• Display doctor profile to patients\n• Show schedule for appointment booking\n• Verify doctor credentials",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors/{{doctor_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["doctors", "{{doctor_id}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Doctor Schedule",
+          "description": "📅 Update doctor's working schedule\n\nThis endpoint allows doctors to modify their working hours and availability.\n\n🎯 Access: Doctor only (owner of the schedule)\n\n📋 Headers Required:\n• Authorization: Bearer {{doctor_access_token}}\n\n📋 Path Parameters:\n• schedule_id: Schedule entry identifier\n\n📋 Body Fields:\n• day: Day of week (Monday, Tuesday, etc.)\n• start_time: Start time (HH:MM format)\n• end_time: End time (HH:MM format)\n• is_available: Boolean availability status\n\n✅ Response:\n• Updated schedule information\n• Confirmation of changes\n\n🔒 Security:\n• Only schedule owner can update\n• Validates time conflicts\n• Ensures logical time ranges\n\n💡 Usage:\n• Modify working hours\n• Set availability status\n• Update specific days\n• Handle emergency closures",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"Monday\",\n  \"start_time\": \"09:00\",\n  \"end_time\": \"17:00\",\n  \"is_available\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctors/schedule/{{schedule_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["doctors", "schedule", "{{schedule_id}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Available Doctors",
+          "description": "🔍 Find doctors available at specific date and time\n\nThis endpoint helps patients find doctors who are available for appointments at a given time.\n\n🎯 Access: Public (no authentication required)\n\n📋 Query Parameters:\n• date (optional): Appointment date (YYYY-MM-DD)\n• time (optional): Appointment time (HH:MM)\n\n✅ Response:\n• List of available doctors\n• Filtered by date/time availability\n• Excludes already booked slots\n\n🔍 Filtering Logic:\n• Checks doctor schedules\n• Excludes existing appointments\n• Considers working hours\n• Validates availability status\n\n💡 Usage:\n• Search for available doctors\n• Check specific time slots\n• Plan appointment booking\n• Verify doctor availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors/available/?date=2024-01-15&time=10:00",
+              "host": ["{{base_url}}"],
+              "path": ["doctors", "available", ""],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2024-01-15"
+                },
+                {
+                  "key": "time",
+                  "value": "10:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Schedules",
+          "description": "📅 Retrieve all schedules for a specific doctor\n\nThis endpoint returns the complete schedule information for a doctor including all working days and times.\n\n🎯 Access: Public (no authentication required)\n\n📋 Path Parameters:\n• doctor_id: Doctor's unique identifier\n\n✅ Response:\n• Complete schedule list\n• Day-wise availability\n• Time slots and status\n• Working hours details\n\n🔍 Schedule Information:\n• All days of the week\n• Start and end times\n• Availability status\n• Schedule conflicts\n\n💡 Usage:\n• Display doctor's full schedule\n• Check working hours\n• Plan appointments\n• Verify availability patterns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors/{{doctor_id}}/schedules/",
+              "host": ["{{base_url}}"],
+              "path": ["doctors", "{{doctor_id}}", "schedules", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Patients",
+      "description": "Patient management and profile endpoints for the Smart Clinic platform.\n\nThese endpoints handle patient profiles, medical history, and profile updates.\n\n🔑 Key Features:\n• Get patient profile (own or by ID)\n• Update patient information\n• View medical history\n• Emergency contact management\n• Profile access control\n\n📝 Notes:\n• Patients can only access their own profile\n• Doctors and admins can access any patient profile\n• Medical history is protected and confidential",
+      "item": [
+        {
+          "name": "Get Patient Profile",
+          "description": "👤 Get current patient's profile information\n\nThis endpoint returns the authenticated patient's complete profile including medical history.\n\n🎯 Access: Patient (own profile), Doctor/Admin (any patient)\n\n📋 Headers Required:\n• Authorization: Bearer {{access_token}}\n\n📋 Query Parameters (for doctors/admins):\n• patient_id (optional): Specific patient ID to retrieve\n\n✅ Response:\n• Complete patient profile\n• Medical history\n• Emergency contacts\n• Personal information\n\n🔒 Security:\n• Patients see only their own profile\n• Doctors/Admins can access any patient\n• Medical data is protected\n\n💡 Usage:\n• Display patient information\n• Access medical history\n• Update profile data\n• Emergency contact lookup",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/patients/me/",
+              "host": ["{{base_url}}"],
+              "path": ["patients", "me", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Patient Profile",
+          "description": "✏️ Update patient's profile information\n\nThis endpoint allows patients to modify their personal and medical information.\n\n🎯 Access: Patient only (own profile)\n\n📋 Headers Required:\n• Authorization: Bearer {{patient_access_token}}\n• Content-Type: application/json\n\n📋 Body Fields:\n• first_name: Patient's first name\n• last_name: Patient's last name\n• phone: Egyptian phone number (11 digits)\n• address: Current address\n• date_of_birth: Birth date\n• gender: Gender (M/F)\n• medical_history: Medical background\n• emergency_contact: Emergency contact number\n\n✅ Response:\n• Updated patient profile\n• Confirmation of changes\n\n🔒 Security:\n• Only profile owner can update\n• Phone number validation\n• Data integrity checks\n\n💡 Usage:\n• Update personal information\n• Modify medical history\n• Change contact details\n• Update emergency contacts",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"أحمد\",\n  \"last_name\": \"محمد\",\n  \"phone\": \"01012345678\",\n  \"address\": \"القاهرة الجديدة، مصر\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"gender\": \"M\",\n  \"medical_history\": \"لا توجد أمراض مزمنة\",\n  \"emergency_contact\": \"01098765432\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/patients/me/",
+              "host": ["{{base_url}}"],
+              "path": ["patients", "me", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Patient Detail (Doctor/Admin)",
+          "description": "👥 Get specific patient profile (for doctors and admins)\n\nThis endpoint allows doctors and admins to retrieve detailed information about any patient.\n\n🎯 Access: Doctor/Admin only\n\n📋 Headers Required:\n• Authorization: Bearer {{doctor_access_token}} or {{admin_access_token}}\n\n📋 Path Parameters:\n• id: Patient's unique identifier\n\n✅ Response:\n• Complete patient profile\n• Medical history\n• Emergency contacts\n• Appointment history\n\n🔒 Security:\n• Only doctors and admins can access\n• Full patient information\n• Confidential medical data\n\n💡 Usage:\n• Doctor consultation preparation\n• Admin patient management\n• Medical record review\n• Emergency contact access",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/patients/{{patient_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["patients", "{{patient_id}}", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Appointments",
+      "description": "Appointment management endpoints for the Smart Clinic platform.\n\nThese endpoints handle appointment booking, viewing, and status updates.\n\n🔑 Key Features:\n• Book new appointments (patients only)\n• View appointments by role\n• Update appointment status\n• Check appointment details\n• Role-based access control\n\n📝 Notes:\n• Only patients can create appointments\n• Doctors can update appointment status\n• Admins have full access to all appointments",
+      "item": [
+        {
+          "name": "Create Appointment",
+          "description": "📝 Book a new appointment with a doctor\n\nThis endpoint allows patients to schedule appointments with available doctors.\n\n🎯 Access: Patient only\n\n📋 Headers Required:\n• Authorization: Bearer {{patient_access_token}}\n• Content-Type: application/json\n\n📋 Body Fields:\n• doctor: Doctor's ID\n• appointment_date: Date (YYYY-MM-DD)\n• appointment_time: Time (HH:MM)\n• reason: Reason for visit\n• description: Additional details\n\n✅ Response:\n• Created appointment details\n• Confirmation message\n• Appointment ID\n\n🔒 Security:\n• Only patients can create appointments\n• Validates doctor availability\n• Checks for time conflicts\n• Ensures valid date/time\n\n💡 Usage:\n• Schedule medical consultations\n• Book follow-up appointments\n• Emergency appointments\n• Regular check-ups",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor\": \"{{doctor_id}}\",\n  \"appointment_date\": \"2024-01-15\",\n  \"appointment_time\": \"10:00\",\n  \"reason\": \"استشارة طبية\",\n  \"description\": \"أشعر بألم في الصدر\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/appointments/create/",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", "create", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Appointments",
+          "description": "📋 Retrieve appointments based on user role\n\nThis endpoint returns appointments according to the user's role and permissions.\n\n🎯 Access: Authenticated users (role-based)\n\n📋 Headers Required:\n• Authorization: Bearer {{access_token}}\n\n✅ Response by Role:\n• Patient: Own appointments only\n• Doctor: Own appointments only\n• Admin: All appointments\n\n🔍 Information Included:\n• Appointment details\n• Patient and doctor info\n• Date and time\n• Status and reason\n\n🔒 Security:\n• Role-based filtering\n• Patient sees only their appointments\n• Doctor sees only their appointments\n• Admin sees all appointments\n\n💡 Usage:\n• View upcoming appointments\n• Check appointment history\n• Manage daily schedule\n• Track appointment status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment Detail",
+          "description": "🔍 Get detailed information about a specific appointment\n\nThis endpoint returns comprehensive details about an appointment including patient and doctor information.\n\n🎯 Access: Appointment owner, assigned doctor, or admin\n\n📋 Headers Required:\n• Authorization: Bearer {{access_token}}\n\n📋 Path Parameters:\n• id: Appointment's unique identifier\n\n✅ Response:\n• Complete appointment details\n• Patient information\n• Doctor information\n• Status and notes\n• Date and time details\n\n🔒 Security:\n• Patient can see their own appointments\n• Doctor can see assigned appointments\n• Admin can see all appointments\n\n💡 Usage:\n• Review appointment details\n• Prepare for consultation\n• Update appointment status\n• Access patient information",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/{{appointment_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", "{{appointment_id}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Appointment Status",
+          "description": "✏️ Update appointment status and notes\n\nThis endpoint allows doctors and admins to update appointment status and add notes.\n\n🎯 Access: Assigned doctor or admin\n\n📋 Headers Required:\n• Authorization: Bearer {{doctor_access_token}} or {{admin_access_token}}\n• Content-Type: application/json\n\n📋 Path Parameters:\n• id: Appointment's unique identifier\n\n📋 Body Fields:\n• status: New status (pending, confirmed, completed, cancelled)\n• notes: Doctor's notes\n\n✅ Response:\n• Updated appointment details\n• Confirmation of changes\n\n🔒 Security:\n• Only assigned doctor or admin can update\n• Status validation\n• Audit trail maintained\n\n💡 Usage:\n• Confirm appointments\n• Add consultation notes\n• Cancel appointments\n• Mark as completed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"notes\": \"تم تأكيد الموعد. يرجى الحضور قبل 10 دقائق\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/appointments/{{appointment_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", "{{appointment_id}}", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Admin Panel",
+      "description": "Administrative endpoints for the Smart Clinic platform.\n\nThese endpoints provide full system management capabilities for administrators.\n\n🔑 Key Features:\n• User management (view all users)\n• Clinic management (CRUD operations)\n• System-wide appointment access\n• Administrative oversight\n• Full platform control\n\n📝 Notes:\n• Admin access required for all endpoints\n• Full CRUD operations on clinics\n• Complete user visibility\n• System-wide appointment management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "description": "👥 Retrieve all users in the system\n\nThis endpoint returns a complete list of all users including patients, doctors, and admins.\n\n🎯 Access: Admin only\n\n📋 Headers Required:\n• Authorization: Bearer {{admin_access_token}}\n\n✅ Response:\n• Complete user list\n• User types and roles\n• Profile information\n• Account status\n\n🔍 User Information:\n• Personal details\n• Contact information\n• Account status\n• Role and permissions\n• Registration date\n\n🔒 Security:\n• Admin access only\n• Sensitive data protection\n• Role-based information\n\n💡 Usage:\n• User management\n• Account monitoring\n• Role administration\n• System overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", ""]
+            }
+          }
+        },
+        {
+          "name": "Get All Clinics",
+          "description": "🏥 Retrieve all clinics in the system\n\nThis endpoint returns a complete list of all registered clinics with their details.\n\n🎯 Access: Admin only\n\n📋 Headers Required:\n• Authorization: Bearer {{admin_access_token}}\n\n✅ Response:\n• Complete clinic list\n• Clinic details and contact info\n• Location information\n• Operating hours\n\n🔍 Clinic Information:\n• Name and description\n• Address and contact\n• Operating hours\n• Services offered\n• Staff information\n\n🔒 Security:\n• Admin access only\n• Complete clinic data\n• Management capabilities\n\n💡 Usage:\n• Clinic management\n• Location overview\n• Service coordination\n• Administrative oversight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/clinics/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "clinics", ""]
+            }
+          }
+        },
+        {
+          "name": "Add Clinic",
+          "description": "➕ Create a new clinic in the system\n\nThis endpoint allows admins to register new clinics with complete information.\n\n🎯 Access: Admin only\n\n📋 Headers Required:\n• Authorization: Bearer {{admin_access_token}}\n• Content-Type: application/json\n\n📋 Body Fields:\n• name: Clinic name\n• description: Clinic description\n• address: Physical address\n• phone: Egyptian phone number (11 digits)\n• email: Contact email\n• website: Clinic website (optional)\n• operating_hours: Working hours\n\n✅ Response:\n• Created clinic details\n• Confirmation message\n• Clinic ID\n\n🔒 Security:\n• Admin access only\n• Data validation\n• Phone number verification\n\n💡 Usage:\n• Register new clinics\n• Expand clinic network\n• Update clinic database\n• Administrative setup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"عيادة القلب المتخصصة\",\n  \"description\": \"عيادة متخصصة في أمراض القلب والأوعية الدموية\",\n  \"address\": \"شارع النيل، القاهرة، مصر\",\n  \"phone\": \"02234567890\",\n  \"email\": \"info@heartclinic.com\",\n  \"website\": \"https://heartclinic.com\",\n  \"operating_hours\": \"الأحد - الخميس: 9:00 ص - 5:00 م\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/clinics/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "clinics", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Clinic",
+          "description": "✏️ Update existing clinic information\n\nThis endpoint allows admins to modify clinic details and information.\n\n🎯 Access: Admin only\n\n📋 Headers Required:\n• Authorization: Bearer {{admin_access_token}}\n• Content-Type: application/json\n\n📋 Path Parameters:\n• id: Clinic's unique identifier\n\n📋 Body Fields:\n• name: Updated clinic name\n• description: Updated description\n• address: Updated address\n• phone: Updated phone number\n• email: Updated email\n• website: Updated website\n• operating_hours: Updated hours\n\n✅ Response:\n• Updated clinic details\n• Confirmation of changes\n\n🔒 Security:\n• Admin access only\n• Data validation\n• Change tracking\n\n💡 Usage:\n• Update clinic information\n• Modify contact details\n• Change operating hours\n• Administrative maintenance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"عيادة القلب المتخصصة - فرع الجيزة\",\n  \"description\": \"فرع جديد في الجيزة متخصص في أمراض القلب\",\n  \"address\": \"شارع الهرم، الجيزة، مصر\",\n  \"phone\": \"02345678901\",\n  \"email\": \"giza@heartclinic.com\",\n  \"website\": \"https://heartclinic.com/giza\",\n  \"operating_hours\": \"الأحد - الخميس: 8:00 ص - 6:00 م\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/clinics/{{clinic_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "clinics", "{{clinic_id}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Delete Clinic",
+          "description": "🗑️ Remove a clinic from the system\n\nThis endpoint allows admins to delete clinics that are no longer active.\n\n🎯 Access: Admin only\n\n📋 Headers Required:\n• Authorization: Bearer {{admin_access_token}}\n\n📋 Path Parameters:\n• id: Clinic's unique identifier\n\n✅ Response:\n• Deletion confirmation\n• Success message\n\n🔒 Security:\n• Admin access only\n• Confirmation required\n• Data cleanup\n\n⚠️ Warning:\n• This action is irreversible\n• Associated data may be affected\n• Consider deactivation instead\n\n💡 Usage:\n• Remove inactive clinics\n• System cleanup\n• Administrative maintenance\n• Data management",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/clinics/{{clinic_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "clinics", "{{clinic_id}}", ""]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://your-domain.com/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_type",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clinic_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "schedule_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
