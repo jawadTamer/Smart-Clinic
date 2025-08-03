@@ -57,15 +57,11 @@ myproject/
 │   ├── urls.py            # API URLs
 │   └── permissions.py     # Custom permissions
 ├── myproject/             # Django project settings
-├── build.sh              # Render build script
-├── render.yaml           # Render deployment config
 ├── requirements.txt      # Python dependencies
 └── README.md            # This file
 ```
 
 ## 🔧 Configuration Files
 
-- `build.sh`: Script for Render deployment
-- `render.yaml`: Render deployment configuration
 - `env.example`: Example environment variables
 - `requirements.txt`: Python dependencies
