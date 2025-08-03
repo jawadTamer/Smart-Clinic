@@ -49,5 +49,7 @@ urlpatterns = [
     ),
     # Admin
     path("admin/users/", views.AdminUserListView.as_view(), name="admin_users"),
+    path("clinics/", views.list_clinics_public, name="list_clinics_public"),
+    path("clinics/create/", views.create_clinic_public, name="create_clinic_public"),
     path("", include(router.urls)),
 ]

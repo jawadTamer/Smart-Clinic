@@ -76,7 +76,8 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 
 #### Permissions:
 
-- **Admin Only**: Add, update, delete clinics
+- **Public Access**: Create new clinics (for doctor registration)
+- **Admin Only**: Update, delete clinics
 - **Read Access for All**: View clinic information
 
 ### 6. Authentication & Security
@@ -162,3 +163,123 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 - **CI/CD**: Continuous integration/deployment support
 
 ## Base URL
+
+Development: `http://127.0.0.1:8000/api/`
+Production: `https://your-domain.com/api/`
+
+## New Public Clinic Endpoints
+
+### Create Clinic (Public Access)
+
+**POST** `/api/clinics/create/`
+
+Create a new clinic for doctor registration purposes.
+
+**Request Body:**
+
+```json
+{
+  "name": "Clinic Name",
+  "address": "Clinic Address",
+  "phone": "01234567890",
+  "email": "clinic@example.com",
+  "description": "Clinic description (optional)"
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Clinic created successfully",
+  "clinic": {
+    "id": "uuid",
+    "name": "Clinic Name",
+    "address": "Clinic Address",
+    "phone": "01234567890",
+    "email": "clinic@example.com",
+    "description": "Clinic description",
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### List Clinics (Public Access)
+
+**GET** `/api/clinics/`
+
+Get all active clinics for selection during doctor registration.
+
+**Response:**
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Clinic Name",
+    "address": "Clinic Address",
+    "phone": "01234567890",
+    "email": "clinic@example.com",
+    "description": "Clinic description",
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]
+```
+
+## Updated Doctor Registration
+
+The doctor registration endpoint now supports clinic creation during registration:
+
+**POST** `/api/auth/register/`
+
+**Request Body (with new clinic):**
+
+```json
+{
+  "username": "doctor_username",
+  "email": "doctor@example.com",
+  "password": "password123",
+  "password2": "password123",
+  "first_name": "John",
+  "last_name": "Doe",
+  "phone": "01234567890",
+  "user_type": "doctor",
+  "specialization": "Cardiology",
+  "license_number": "MED123456",
+  "experience_years": 10,
+  "consultation_fee": 500.0,
+  "bio": "Experienced cardiologist",
+  "new_clinic": {
+    "name": "New Clinic",
+    "address": "Clinic Address",
+    "phone": "01234567890",
+    "email": "clinic@example.com",
+    "description": "Clinic description"
+  }
+}
+```
+
+**Request Body (with existing clinic):**
+
+```json
+{
+  "username": "doctor_username",
+  "email": "doctor@example.com",
+  "password": "password123",
+  "password2": "password123",
+  "first_name": "John",
+  "last_name": "Doe",
+  "phone": "01234567890",
+  "user_type": "doctor",
+  "specialization": "Cardiology",
+  "license_number": "MED123456",
+  "experience_years": 10,
+  "consultation_fee": 500.0,
+  "bio": "Experienced cardiologist",
+  "clinic": "existing-clinic-uuid"
+}
+```

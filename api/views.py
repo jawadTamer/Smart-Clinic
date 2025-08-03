@@ -48,7 +48,59 @@ def register(request):
         if user.user_type == "patient":
             Patient.objects.create(user=user)
         elif user.user_type == "doctor":
-            Doctor.objects.create(user=user)
+            # Handle clinic creation or selection for doctors
+            clinic_data = request.data.get("new_clinic")
+            clinic_id = request.data.get("clinic")
+
+            if clinic_data:
+                # Create new clinic first
+                clinic_serializer = ClinicSerializer(data=clinic_data)
+                if clinic_serializer.is_valid():
+                    clinic = clinic_serializer.save()
+                    # Create doctor with the new clinic
+                    doctor_data = {
+                        "specialization": request.data.get("specialization"),
+                        "license_number": request.data.get("license_number"),
+                        "clinic": clinic,
+                        "experience_years": request.data.get("experience_years", 0),
+                        "consultation_fee": request.data.get("consultation_fee", 0.00),
+                        "bio": request.data.get("bio", ""),
+                        "is_available": request.data.get("is_available", True),
+                    }
+                    Doctor.objects.create(user=user, **doctor_data)
+                else:
+                    # If clinic creation fails, delete the user and return error
+                    user.delete()
+                    return Response(
+                        clinic_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+            elif clinic_id:
+                # Use existing clinic
+                try:
+                    clinic = Clinic.objects.get(id=clinic_id)
+                    doctor_data = {
+                        "specialization": request.data.get("specialization"),
+                        "license_number": request.data.get("license_number"),
+                        "clinic": clinic,
+                        "experience_years": request.data.get("experience_years", 0),
+                        "consultation_fee": request.data.get("consultation_fee", 0.00),
+                        "bio": request.data.get("bio", ""),
+                        "is_available": request.data.get("is_available", True),
+                    }
+                    Doctor.objects.create(user=user, **doctor_data)
+                except Clinic.DoesNotExist:
+                    user.delete()
+                    return Response(
+                        {"error": "Selected clinic does not exist"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                # No clinic provided, delete user and return error
+                user.delete()
+                return Response(
+                    {"error": "Clinic information is required for doctor registration"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Generate tokens
         refresh = RefreshToken.for_user(user)
@@ -238,6 +290,30 @@ class AdminClinicViewSet(viewsets.ModelViewSet):
     serializer_class = ClinicSerializer
     permission_classes = [IsAdmin]
     queryset = Clinic.objects.all()
+
+
+# Public Clinic Creation
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def create_clinic_public(request):
+    """Create a new clinic (public access for doctor registration)"""
+    serializer = ClinicSerializer(data=request.data)
+    if serializer.is_valid():
+        clinic = serializer.save()
+        return Response(
+            {"message": "Clinic created successfully", "clinic": serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_clinics_public(request):
+    """List all active clinics (public access for doctor registration)"""
+    clinics = Clinic.objects.filter(is_active=True)
+    serializer = ClinicSerializer(clinics, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # Additional Views
