@@ -40,7 +40,33 @@ from .permissions import (
 @permission_classes([AllowAny])
 def register(request):
     """Register a new user (patient/doctor)"""
-    serializer = RegisterSerializer(data=request.data)
+    # Handle both data and files for FormData
+    data = request.data.copy()
+
+    # Handle profile picture file upload
+    if "profile_picture" in request.FILES:
+        profile_picture = request.FILES["profile_picture"]
+
+        # Validate file type
+        allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
+        if profile_picture.content_type not in allowed_types:
+            return Response(
+                {
+                    "error": "Invalid file type. Only JPEG, PNG, and GIF images are allowed."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate file size (max 5MB)
+        if profile_picture.size > 5 * 1024 * 1024:
+            return Response(
+                {"error": "File size too large. Maximum size is 5MB."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        data["profile_picture"] = profile_picture
+
+    serializer = RegisterSerializer(data=data)
     if serializer.is_valid():
         user = serializer.save()
 

@@ -142,6 +142,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "address",
             "date_of_birth",
             "gender",
+            "profile_picture",
         ]
 
     def validate(self, attrs):
