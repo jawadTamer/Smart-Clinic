@@ -46,7 +46,26 @@ def register(request):
 
         # Create patient or doctor profile based on user type
         if user.user_type == "patient":
-            Patient.objects.create(user=user)
+            # Extract patient-specific fields from FormData
+            medical_history = request.data.get("medical_history", "")
+            allergies = request.data.get("allergies", "")
+            emergency_contact = request.data.get("emergency_contact", "")
+            emergency_contact_name = request.data.get("emergency_contact_name", "")
+            blood_type = request.data.get("blood_type", "")
+
+            # Clean empty strings to None for optional fields
+            patient_data = {
+                "medical_history": medical_history if medical_history.strip() else None,
+                "allergies": allergies if allergies.strip() else None,
+                "emergency_contact": (
+                    emergency_contact if emergency_contact.strip() else None
+                ),
+                "emergency_contact_name": (
+                    emergency_contact_name if emergency_contact_name.strip() else None
+                ),
+                "blood_type": blood_type if blood_type.strip() else None,
+            }
+            Patient.objects.create(user=user, **patient_data)
         elif user.user_type == "doctor":
             # Handle clinic creation or selection for doctors
             clinic_data = request.data.get("new_clinic")
