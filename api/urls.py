@@ -12,8 +12,16 @@ urlpatterns = [
     path("auth/login/", views.login, name="login"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("users/me/", views.get_user_profile, name="user_profile"),
-    path("users/upload-profile-image/", views.upload_profile_image, name="upload_profile_image"),
-    path("users/update-profile/", views.update_user_profile, name="update_user_profile"),
+    path(
+        "users/upload-profile-image/",
+        views.upload_profile_image,
+        name="upload_profile_image",
+    ),
+    path(
+        "users/update-profile/", views.update_user_profile, name="update_user_profile"
+    ),
+    # Media files
+    path("media/<path:file_path>", views.serve_media_file, name="serve_media_file"),
     # Doctors
     path("doctors/", views.DoctorListView.as_view(), name="doctor_list"),
     path("doctors/<uuid:id>/", views.DoctorDetailView.as_view(), name="doctor_detail"),
