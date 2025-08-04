@@ -15,7 +15,6 @@ class CustomUserCreationForm(UserCreationForm):
             "email",
             "first_name",
             "last_name",
-            "user_type",
             "phone",
             "address",
             "date_of_birth",
@@ -92,11 +91,6 @@ class DoctorCreationForm(CustomUserCreationForm):
     bio = forms.CharField(widget=forms.Textarea, required=False)
     is_available = forms.BooleanField(initial=True, required=False)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Set user_type to doctor by default
-        self.fields["user_type"].initial = "doctor"
-
 
 @admin.register(Doctor)
 class DoctorAdmin(admin.ModelAdmin):
@@ -130,7 +124,7 @@ class DoctorAdmin(admin.ModelAdmin):
                 "email": form.cleaned_data["email"],
                 "first_name": form.cleaned_data["first_name"],
                 "last_name": form.cleaned_data["last_name"],
-                "user_type": form.cleaned_data["user_type"],
+                "user_type": "doctor",
                 "phone": form.cleaned_data["phone"],
                 "address": form.cleaned_data["address"],
                 "date_of_birth": form.cleaned_data["date_of_birth"],
@@ -164,11 +158,6 @@ class PatientCreationForm(CustomUserCreationForm):
     emergency_contact_name = forms.CharField(max_length=100, required=False)
     blood_type = forms.CharField(max_length=5, required=False)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Set user_type to patient by default
-        self.fields["user_type"].initial = "patient"
-
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
@@ -183,14 +172,14 @@ class PatientAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change):
-        if not change:  # Creating new patient
-            # Create user first
+        if not change:
+
             user_data = {
                 "username": form.cleaned_data["username"],
                 "email": form.cleaned_data["email"],
                 "first_name": form.cleaned_data["first_name"],
                 "last_name": form.cleaned_data["last_name"],
-                "user_type": form.cleaned_data["user_type"],
+                "user_type": "patient",
                 "phone": form.cleaned_data["phone"],
                 "address": form.cleaned_data["address"],
                 "date_of_birth": form.cleaned_data["date_of_birth"],
