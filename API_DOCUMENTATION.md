@@ -80,7 +80,21 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 - **Admin Only**: Update, delete clinics
 - **Read Access for All**: View clinic information
 
-### 6. Authentication & Security
+### 6. Clinic Access Permissions
+
+#### Public Clinic Access:
+
+- **Who Can Access**: Anyone (public, authenticated users, doctors, patients, admins)
+- **What They See**: All active clinics only
+- **Purpose**: For doctor registration and public clinic browsing
+
+#### Admin Clinic Access:
+
+- **Who Can Access**: Administrators only
+- **What They See**: All clinics (both active and inactive)
+- **Purpose**: Full clinic management and administration
+
+### 7. Authentication & Security
 
 #### JWT Authentication:
 
@@ -94,7 +108,7 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 - **Object-level Permissions**: Access to personal data only
 - **Special Permissions**: Doctors can access patient profiles
 
-### 7. Data Validation
+### 8. Data Validation
 
 #### Phone Number Validation:
 
@@ -108,7 +122,7 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 - **Date**: Ensures appointment date is in the future
 - **Duplication**: Prevents double booking at same time
 
-### 8. API Features
+### 9. API Features
 
 #### RESTful API:
 
@@ -128,7 +142,7 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 - **Detailed Descriptions**: Detailed explanation of each API
 - **Status Codes**: Explanation of all response codes
 
-### 9. Frontend Integration
+### 10. Frontend Integration
 
 #### CORS Support:
 
@@ -142,7 +156,7 @@ The Smart Clinic API is a comprehensive clinic management system built with Djan
 - **Related Data**: Include related data in responses
 - **Clear Errors**: Clear and helpful error messages
 
-### 10. Production Settings
+### 11. Production Settings
 
 #### Security:
 
@@ -230,6 +244,49 @@ Get all active clinics for selection during doctor registration.
 ]
 ```
 
+## Clinic Access Endpoints
+
+### List All Active Clinics (Public Access)
+
+**GET** `/api/clinics/`
+
+Get all active clinics. This endpoint is accessible to anyone (public access).
+
+**Headers:**
+
+```
+Content-Type: application/json
+```
+
+**No authentication required** - This is a public endpoint.
+
+**Response (Success - 200 OK):**
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Clinic Name",
+    "address": "Clinic Address",
+    "phone": "01234567890",
+    "email": "clinic@example.com",
+    "description": "Clinic description",
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]
+```
+
+**cURL Example:**
+
+```bash
+curl -X GET \
+  https://smart-clinic-api.fly.dev/api/clinics/
+```
+
+**Note:** This endpoint returns only active clinics (`is_active: true`). For access to all clinics (including inactive ones), administrators can use the admin interface.
+
 ## Updated Doctor Registration
 
 The doctor registration endpoint now supports clinic creation during registration:
@@ -283,3 +340,5 @@ The doctor registration endpoint now supports clinic creation during registratio
   "clinic": "existing-clinic-uuid"
 }
 ```
+
+## Profile Image Management Endpoints
