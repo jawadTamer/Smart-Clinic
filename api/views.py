@@ -152,6 +152,23 @@ def get_user_profile(request):
     return Response(serializer.data)
 
 
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    """Update current user profile"""
+    user = request.user
+    serializer = UserSerializer(user, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"message": "Profile updated successfully", "user": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # Doctor Views
 class DoctorListView(generics.ListAPIView):
     """List all doctors with optional specialization filter"""
@@ -314,6 +331,56 @@ def list_clinics_public(request):
     clinics = Clinic.objects.filter(is_active=True)
     serializer = ClinicSerializer(clinics, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Profile Image Upload View
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_profile_image(request):
+    """Upload profile image for the current user"""
+    if "profile_picture" not in request.FILES:
+        return Response(
+            {"error": "No profile picture file provided"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    profile_picture = request.FILES["profile_picture"]
+
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
+    if profile_picture.content_type not in allowed_types:
+        return Response(
+            {"error": "Invalid file type. Only JPEG, PNG, and GIF images are allowed."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Validate file size (max 5MB)
+    if profile_picture.size > 5 * 1024 * 1024:
+        return Response(
+            {"error": "File size too large. Maximum size is 5MB."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        # Update user's profile picture
+        user = request.user
+        user.profile_picture = profile_picture
+        user.save()
+
+        return Response(
+            {
+                "message": "Profile image uploaded successfully",
+                "profile_picture_url": (
+                    user.profile_picture.url if user.profile_picture else None
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
+    except Exception as e:
+        return Response(
+            {"error": f"Failed to upload profile image: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 # Additional Views
