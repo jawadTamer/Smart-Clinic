@@ -205,6 +205,12 @@ class DoctorScheduleSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
+class DoctorScheduleCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorSchedule
+        fields = ["day", "start_time", "end_time", "is_available"]
+
+
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     clinic = ClinicSerializer(read_only=True)

@@ -25,6 +25,7 @@ from .serializers import (
     AppointmentCreateSerializer,
     AppointmentUpdateSerializer,
     DoctorScheduleSerializer,
+    DoctorScheduleCreateSerializer,
 )
 from .permissions import (
     IsPatient,
@@ -445,7 +446,7 @@ class DoctorScheduleListView(generics.ListAPIView):
 
 
 class DoctorScheduleCreateView(generics.CreateAPIView):
-    serializer_class = DoctorScheduleSerializer
+    serializer_class = DoctorScheduleCreateSerializer
     permission_classes = [IsDoctor]
 
     def perform_create(self, serializer):
