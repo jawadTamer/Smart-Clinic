@@ -100,6 +100,9 @@ def validate_phone_number(value):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    doctor_id = serializers.SerializerMethodField()
+    patient_id = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -117,8 +120,18 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "doctor_id",
+            "patient_id",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_doctor_id(self, obj):
+        doctor_profile = getattr(obj, "doctor_profile", None)
+        return str(doctor_profile.id) if doctor_profile else None
+
+    def get_patient_id(self, obj):
+        patient_profile = getattr(obj, "patient_profile", None)
+        return str(patient_profile.id) if patient_profile else None
 
 
 class RegisterSerializer(serializers.ModelSerializer):
