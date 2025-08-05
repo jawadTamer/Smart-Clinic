@@ -203,8 +203,25 @@ def login(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
-    serializer = UserSerializer(request.user)
-    return Response(serializer.data)
+    user = request.user
+    serializer = UserSerializer(user)
+    data = serializer.data
+    # Add doctor_id or patient_id if available
+    doctor_id = None
+    patient_id = None
+    if user.user_type == "doctor":
+        try:
+            doctor_id = user.doctor_profile.id
+        except Exception:
+            doctor_id = None
+    if user.user_type == "patient":
+        try:
+            patient_id = user.patient_profile.id
+        except Exception:
+            patient_id = None
+    data["doctor_id"] = doctor_id
+    data["patient_id"] = patient_id
+    return Response(data)
 
 
 @api_view(["PUT", "PATCH"])
