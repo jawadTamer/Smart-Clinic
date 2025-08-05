@@ -11,6 +11,7 @@ from django.http import FileResponse, Http404
 from django.conf import settings
 import os
 
+
 from .models import User, Doctor, Patient, Clinic, DoctorSchedule, Appointment
 from .serializers import (
     UserSerializer,
@@ -37,6 +38,7 @@ from .permissions import (
     IsPatientOwnerOrDoctorOrAdmin,
 )
 
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def serve_media_file(request, file_path):
@@ -62,6 +64,7 @@ def serve_media_file(request, file_path):
         return response
     except (OSError, IOError):
         raise Http404("File not found")
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -107,6 +110,16 @@ def register(request):
         elif user.user_type == "doctor":
             clinic_data = request.data.get("new_clinic")
             clinic_id = request.data.get("clinic")
+            from myproject.api.models import Doctor
+
+            license_number = request.data.get("license_number")
+
+            if Doctor.objects.filter(license_number=license_number).exists():
+                user.delete()
+                return Response(
+                    {"error": "A doctor with this license number already exists."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             if clinic_data:
                 clinic_serializer = ClinicSerializer(data=clinic_data)
                 if clinic_serializer.is_valid():
@@ -165,6 +178,7 @@ def register(request):
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
@@ -185,11 +199,13 @@ def login(request):
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
 
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
@@ -204,9 +220,11 @@ def update_user_profile(request):
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class DoctorListView(generics.ListAPIView):
     serializer_class = DoctorSerializer
     permission_classes = [AllowAny]
+
     def get_queryset(self):
         queryset = Doctor.objects.filter(is_available=True)
         specialization = self.request.query_params.get("specialization", None)
@@ -214,25 +232,31 @@ class DoctorListView(generics.ListAPIView):
             queryset = queryset.filter(specialization=specialization)
         return queryset
 
+
 class DoctorDetailView(generics.RetrieveAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorDetailSerializer
     permission_classes = [AllowAny]
     lookup_field = "id"
 
+
 class DoctorScheduleUpdateView(generics.UpdateAPIView):
     serializer_class = DoctorScheduleSerializer
     permission_classes = [IsDoctor, IsOwnerOrAdmin]
+
     def get_queryset(self):
         return DoctorSchedule.objects.filter(doctor__user=self.request.user)
+
     def get_object(self):
         doctor = get_object_or_404(Doctor, user=self.request.user)
         schedule_id = self.kwargs.get("schedule_id")
         return get_object_or_404(DoctorSchedule, id=schedule_id, doctor=doctor)
 
+
 class PatientProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = PatientSerializer
     permission_classes = [IsPatientOrDoctorOrAdmin, IsPatientOwnerOrDoctorOrAdmin]
+
     def get_object(self):
         if self.request.user.user_type == "patient":
             return get_object_or_404(Patient, user=self.request.user)
@@ -244,22 +268,27 @@ class PatientProfileView(generics.RetrieveUpdateAPIView):
                 return Patient.objects.first()
         return get_object_or_404(Patient, user=self.request.user)
 
+
 class PatientDetailView(generics.RetrieveAPIView):
     serializer_class = PatientSerializer
     permission_classes = [IsDoctorOrAdmin]
     queryset = Patient.objects.all()
     lookup_field = "id"
 
+
 class AppointmentCreateView(generics.CreateAPIView):
     serializer_class = AppointmentCreateSerializer
     permission_classes = [IsPatient]
+
     def perform_create(self, serializer):
         patient = get_object_or_404(Patient, user=self.request.user)
         serializer.save(patient=patient)
 
+
 class AppointmentListView(generics.ListAPIView):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         user = self.request.user
         if user.user_type == "admin":
@@ -272,25 +301,30 @@ class AppointmentListView(generics.ListAPIView):
             return Appointment.objects.filter(patient=patient)
         return Appointment.objects.none()
 
+
 class AppointmentDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = AppointmentUpdateSerializer
     permission_classes = [IsAppointmentOwnerOrDoctor]
     queryset = Appointment.objects.all()
     lookup_field = "id"
+
     def get_serializer_class(self):
         if self.request.method == "GET":
             return AppointmentSerializer
         return AppointmentUpdateSerializer
+
 
 class AdminUserListView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
     queryset = User.objects.all()
 
+
 class AdminClinicViewSet(viewsets.ModelViewSet):
     serializer_class = ClinicSerializer
     permission_classes = [IsAdmin]
     queryset = Clinic.objects.all()
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -304,12 +338,14 @@ def create_clinic_public(request):
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_clinics_public(request):
     clinics = Clinic.objects.filter(is_active=True)
     serializer = ClinicSerializer(clinics, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -350,9 +386,11 @@ def upload_profile_image(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+
 class AvailableDoctorsView(generics.ListAPIView):
     serializer_class = DoctorSerializer
     permission_classes = [AllowAny]
+
     def get_queryset(self):
         date_str = self.request.query_params.get("date")
         time_str = self.request.query_params.get("time")
@@ -377,9 +415,11 @@ class AvailableDoctorsView(generics.ListAPIView):
         except ValueError:
             return Doctor.objects.filter(is_available=True)
 
+
 class DoctorScheduleListView(generics.ListAPIView):
     serializer_class = DoctorScheduleSerializer
     permission_classes = [AllowAny]
+
     def get_queryset(self):
         doctor_id = self.kwargs.get("doctor_id")
         if doctor_id:
