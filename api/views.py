@@ -442,3 +442,12 @@ class DoctorScheduleListView(generics.ListAPIView):
         if doctor_id:
             return DoctorSchedule.objects.filter(doctor_id=doctor_id)
         return DoctorSchedule.objects.none()
+
+
+class DoctorScheduleCreateView(generics.CreateAPIView):
+    serializer_class = DoctorScheduleSerializer
+    permission_classes = [IsDoctor]
+
+    def perform_create(self, serializer):
+        doctor = get_object_or_404(Doctor, user=self.request.user)
+        serializer.save(doctor=doctor)

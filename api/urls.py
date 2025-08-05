@@ -36,6 +36,11 @@ urlpatterns = [
         name="doctor_schedules",
     ),
     path(
+        "doctors/schedule/create/",
+        views.DoctorScheduleCreateView.as_view(),
+        name="doctor_schedule_create",
+    ),
+    path(
         "doctors/available/",
         views.AvailableDoctorsView.as_view(),
         name="available_doctors",
