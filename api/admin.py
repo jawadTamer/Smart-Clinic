@@ -4,12 +4,29 @@ from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from .models import User, Doctor, Patient, Clinic, DoctorSchedule, Appointment
 from django.db import IntegrityError
+from .models import User, Doctor, Patient, Clinic, DoctorSchedule, Appointment
 
 
 # -------------------------------
-# Base User Creation Form
+# SPECIALIZATION Choices
+# -------------------------------
+SPECIALIZATION_CHOICES = (
+    ("Cardiology", "Cardiology"),
+    ("Dermatology", "Dermatology"),
+    ("Neurology", "Neurology"),
+    ("Orthopedics", "Orthopedics"),
+    ("Pediatrics", "Pediatrics"),
+    ("Psychiatry", "Psychiatry"),
+    ("General", "General Medicine"),
+    ("Dental", "Dental"),
+    ("Eye", "Eye Care"),
+    ("Surgery", "Surgery"),
+)
+
+
+# -------------------------------
+# Base User Form
 # -------------------------------
 class BaseUserForm(UserCreationForm):
     """Base form with common user fields and validation"""
@@ -35,7 +52,7 @@ class BaseUserForm(UserCreationForm):
 
 
 # -------------------------------
-# Doctor Creation Form (with User creation)
+# Doctor Form
 # -------------------------------
 class DoctorForm(forms.ModelForm):
     username = forms.CharField(max_length=150)
@@ -50,6 +67,8 @@ class DoctorForm(forms.ModelForm):
     is_active = forms.BooleanField(initial=True, required=False)
     password1 = forms.CharField(widget=forms.PasswordInput, required=False)
     password2 = forms.CharField(widget=forms.PasswordInput, required=False)
+
+    specialization = forms.ChoiceField(choices=SPECIALIZATION_CHOICES, required=True)
 
     class Meta:
         model = Doctor
@@ -84,34 +103,6 @@ class DoctorForm(forms.ModelForm):
             self.add_error("password2", "Passwords do not match.")
         return cleaned_data
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        qs = User.objects.filter(username__iexact=username)
-        if self.instance.pk and getattr(self.instance, "user_id", None):
-            qs = qs.exclude(pk=self.instance.user.pk)
-        if qs.exists():
-            raise ValidationError("This username is already taken.")
-        return username
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if email:
-            qs = User.objects.filter(email__iexact=email)
-            if self.instance.pk and getattr(self.instance, "user_id", None):
-                qs = qs.exclude(pk=self.instance.user.pk)
-            if qs.exists():
-                raise ValidationError("This email is already registered.")
-        return email
-
-    def clean_license_number(self):
-        license_number = self.cleaned_data.get("license_number")
-        qs = Doctor.objects.filter(license_number=license_number)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise ValidationError("This license number is already registered.")
-        return license_number
-
     @transaction.atomic
     def save(self, commit=True):
         doctor = super().save(commit=False)
@@ -128,7 +119,6 @@ class DoctorForm(forms.ModelForm):
             user.gender = self.cleaned_data.get("gender")
             user.profile_picture = self.cleaned_data.get("profile_picture")
             user.is_active = self.cleaned_data.get("is_active", True)
-
             if self.cleaned_data.get("password1"):
                 user.set_password(self.cleaned_data["password1"])
             user.save()
@@ -155,7 +145,7 @@ class DoctorForm(forms.ModelForm):
 
 
 # -------------------------------
-# Patient Creation Form (with User creation)
+# Patient Form
 # -------------------------------
 class PatientForm(forms.ModelForm):
     username = forms.CharField(max_length=150)
@@ -173,7 +163,7 @@ class PatientForm(forms.ModelForm):
 
     class Meta:
         model = Patient
-        fields = ["medical_history"]
+        fields = ["medical_history", "allergies", "blood_type", "emergency_contact_name", "emergency_contact"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -201,25 +191,6 @@ class PatientForm(forms.ModelForm):
             self.add_error("password2", "Passwords do not match.")
         return cleaned_data
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        qs = User.objects.filter(username__iexact=username)
-        if self.instance.pk and getattr(self.instance, "user_id", None):
-            qs = qs.exclude(pk=self.instance.user.pk)
-        if qs.exists():
-            raise ValidationError("This username is already taken.")
-        return username
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if email:
-            qs = User.objects.filter(email__iexact=email)
-            if self.instance.pk and getattr(self.instance, "user_id", None):
-                qs = qs.exclude(pk=self.instance.user.pk)
-            if qs.exists():
-                raise ValidationError("This email is already registered.")
-        return email
-
     @transaction.atomic
     def save(self, commit=True):
         patient = super().save(commit=False)
@@ -236,7 +207,6 @@ class PatientForm(forms.ModelForm):
             user.gender = self.cleaned_data.get("gender")
             user.profile_picture = self.cleaned_data.get("profile_picture")
             user.is_active = self.cleaned_data.get("is_active", True)
-
             if self.cleaned_data.get("password1"):
                 user.set_password(self.cleaned_data["password1"])
             user.save()
@@ -263,7 +233,7 @@ class PatientForm(forms.ModelForm):
 
 
 # -------------------------------
-# Admin Classes
+# Admin Registration
 # -------------------------------
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -281,36 +251,14 @@ class DoctorAdmin(admin.ModelAdmin):
     search_fields = ["user__username", "user__first_name", "user__last_name", "license_number"]
     ordering = ["user__first_name"]
 
-    def save_model(self, request, obj, form, change):
-        try:
-            with transaction.atomic():
-                form.save(commit=True)
-        except IntegrityError:
-            raise forms.ValidationError("Username or email already exists. Please choose another.")
-        except ValidationError as e:
-            raise e
-        except Exception as e:
-            raise forms.ValidationError(f"Failed to save doctor: {str(e)}")
-
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
     form = PatientForm
-    list_display = ["user", "medical_history", "created_at"]
-    list_filter = ["created_at"]
+    list_display = ["user", "blood_type", "emergency_contact_name", "emergency_contact", "created_at"]
+    list_filter = ["blood_type", "created_at"]
     search_fields = ["user__username", "user__first_name", "user__last_name"]
     ordering = ["user__first_name"]
-
-    def save_model(self, request, obj, form, change):
-        try:
-            with transaction.atomic():
-                form.save(commit=True)
-        except IntegrityError:
-            raise forms.ValidationError("Username or email already exists. Please choose another.")
-        except ValidationError as e:
-            raise e
-        except Exception as e:
-            raise forms.ValidationError(f"Failed to save patient: {str(e)}")
 
 
 @admin.register(Clinic)
