@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.db import transaction
 from .models import User, Doctor, Patient, Clinic, DoctorSchedule, Appointment
 
 
@@ -90,6 +91,18 @@ class DoctorCreationForm(CustomUserCreationForm):
     consultation_fee = forms.DecimalField(max_digits=10, decimal_places=2, initial=0.00)
     bio = forms.CharField(widget=forms.Textarea, required=False)
     is_available = forms.BooleanField(initial=True, required=False)
+    
+    def clean_license_number(self):
+        license_number = self.cleaned_data.get('license_number')
+        if license_number and Doctor.objects.filter(license_number=license_number).exists():
+            raise forms.ValidationError("A doctor with this license number already exists.")
+        return license_number
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username and User.objects.filter(username=username).exists():
+            raise forms.ValidationError("A user with this username already exists.")
+        return username
 
 
 @admin.register(Doctor)
@@ -118,35 +131,48 @@ class DoctorAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not change:  # Creating new doctor
-            # Create user first
-            user_data = {
-                "username": form.cleaned_data["username"],
-                "email": form.cleaned_data["email"],
-                "first_name": form.cleaned_data["first_name"],
-                "last_name": form.cleaned_data["last_name"],
-                "user_type": "doctor",
-                "phone": form.cleaned_data["phone"],
-                "address": form.cleaned_data["address"],
-                "date_of_birth": form.cleaned_data["date_of_birth"],
-                "gender": form.cleaned_data["gender"],
-                "profile_picture": form.cleaned_data.get("profile_picture"),
-                "is_active": form.cleaned_data.get("is_active", True),
-            }
-            user = User.objects.create_user(**user_data)
-            user.set_password(form.cleaned_data["password1"])
-            user.save()
+            try:
+                with transaction.atomic():
+                    # Create user first
+                    user_data = {
+                        "username": form.cleaned_data["username"],
+                        "email": form.cleaned_data["email"],
+                        "first_name": form.cleaned_data["first_name"],
+                        "last_name": form.cleaned_data["last_name"],
+                        "user_type": "doctor",
+                        "phone": form.cleaned_data.get("phone", ""),
+                        "address": form.cleaned_data.get("address", ""),
+                        "date_of_birth": form.cleaned_data.get("date_of_birth"),
+                        "gender": form.cleaned_data.get("gender"),
+                        "profile_picture": form.cleaned_data.get("profile_picture"),
+                        "is_active": form.cleaned_data.get("is_active", True),
+                    }
+                    
+                    # Check for duplicate license number
+                    license_number = form.cleaned_data["license_number"]
+                    if Doctor.objects.filter(license_number=license_number).exists():
+                        raise forms.ValidationError(f"A doctor with license number {license_number} already exists.")
+                    
+                    user = User.objects.create_user(**user_data)
+                    user.set_password(form.cleaned_data["password1"])
+                    user.save()
 
-            # Create doctor profile
-            obj.user = user
-            obj.specialization = form.cleaned_data["specialization"]
-            obj.license_number = form.cleaned_data["license_number"]
-            obj.clinic = form.cleaned_data["clinic"]
-            obj.experience_years = form.cleaned_data["experience_years"]
-            obj.consultation_fee = form.cleaned_data["consultation_fee"]
-            obj.bio = form.cleaned_data["bio"]
-            obj.is_available = form.cleaned_data["is_available"]
-
-        super().save_model(request, obj, form, change)
+                    # Create doctor profile
+                    obj.user = user
+                    obj.specialization = form.cleaned_data["specialization"]
+                    obj.license_number = license_number
+                    obj.clinic = form.cleaned_data["clinic"]
+                    obj.experience_years = form.cleaned_data.get("experience_years", 0)
+                    obj.consultation_fee = form.cleaned_data.get("consultation_fee", 0.00)
+                    obj.bio = form.cleaned_data.get("bio", "")
+                    obj.is_available = form.cleaned_data.get("is_available", True)
+                    
+                    super().save_model(request, obj, form, change)
+                    
+            except Exception as e:
+                raise forms.ValidationError(f"Failed to create doctor: {str(e)}")
+        else:
+            super().save_model(request, obj, form, change)
 
 
 class PatientCreationForm(CustomUserCreationForm):
@@ -157,6 +183,12 @@ class PatientCreationForm(CustomUserCreationForm):
     emergency_contact = forms.CharField(max_length=15, required=False)
     emergency_contact_name = forms.CharField(max_length=100, required=False)
     blood_type = forms.CharField(max_length=5, required=False)
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username and User.objects.filter(username=username).exists():
+            raise forms.ValidationError("A user with this username already exists.")
+        return username
 
 
 @admin.register(Patient)
@@ -172,34 +204,40 @@ class PatientAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change):
-        if not change:
+        if not change:  # Creating new patient
+            try:
+                with transaction.atomic():
+                    user_data = {
+                        "username": form.cleaned_data["username"],
+                        "email": form.cleaned_data["email"],
+                        "first_name": form.cleaned_data["first_name"],
+                        "last_name": form.cleaned_data["last_name"],
+                        "user_type": "patient",
+                        "phone": form.cleaned_data.get("phone", ""),
+                        "address": form.cleaned_data.get("address", ""),
+                        "date_of_birth": form.cleaned_data.get("date_of_birth"),
+                        "gender": form.cleaned_data.get("gender"),
+                        "profile_picture": form.cleaned_data.get("profile_picture"),
+                        "is_active": form.cleaned_data.get("is_active", True),
+                    }
+                    user = User.objects.create_user(**user_data)
+                    user.set_password(form.cleaned_data["password1"])
+                    user.save()
 
-            user_data = {
-                "username": form.cleaned_data["username"],
-                "email": form.cleaned_data["email"],
-                "first_name": form.cleaned_data["first_name"],
-                "last_name": form.cleaned_data["last_name"],
-                "user_type": "patient",
-                "phone": form.cleaned_data["phone"],
-                "address": form.cleaned_data["address"],
-                "date_of_birth": form.cleaned_data["date_of_birth"],
-                "gender": form.cleaned_data["gender"],
-                "profile_picture": form.cleaned_data.get("profile_picture"),
-                "is_active": form.cleaned_data.get("is_active", True),
-            }
-            user = User.objects.create_user(**user_data)
-            user.set_password(form.cleaned_data["password1"])
-            user.save()
-
-            # Create patient profile
-            obj.user = user
-            obj.medical_history = form.cleaned_data["medical_history"]
-            obj.allergies = form.cleaned_data["allergies"]
-            obj.emergency_contact = form.cleaned_data["emergency_contact"]
-            obj.emergency_contact_name = form.cleaned_data["emergency_contact_name"]
-            obj.blood_type = form.cleaned_data["blood_type"]
-
-        super().save_model(request, obj, form, change)
+                    # Create patient profile
+                    obj.user = user
+                    obj.medical_history = form.cleaned_data.get("medical_history", "")
+                    obj.allergies = form.cleaned_data.get("allergies", "")
+                    obj.emergency_contact = form.cleaned_data.get("emergency_contact", "")
+                    obj.emergency_contact_name = form.cleaned_data.get("emergency_contact_name", "")
+                    obj.blood_type = form.cleaned_data.get("blood_type", "")
+                    
+                    super().save_model(request, obj, form, change)
+                    
+            except Exception as e:
+                raise forms.ValidationError(f"Failed to create patient: {str(e)}")
+        else:
+            super().save_model(request, obj, form, change)
 
 
 @admin.register(DoctorSchedule)
