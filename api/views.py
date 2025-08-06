@@ -6,10 +6,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.db import transaction
+from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
 from django.http import FileResponse, Http404
 from django.conf import settings
 import os
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 from .models import User, Doctor, Patient, Clinic, DoctorSchedule, Appointment
@@ -71,6 +77,11 @@ def serve_media_file(request, file_path):
 @permission_classes([AllowAny])
 def register(request):
     data = request.data.copy()
+    
+    # Log the incoming data for debugging (remove sensitive info)
+    logger.info(f"Registration attempt for user_type: {data.get('user_type')}")
+    
+    # Handle profile picture validation
     if "profile_picture" in request.FILES:
         profile_picture = request.FILES["profile_picture"]
         allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
@@ -87,97 +98,136 @@ def register(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         data["profile_picture"] = profile_picture
+    
+    # Validate the basic user data
     serializer = RegisterSerializer(data=data)
-    if serializer.is_valid():
-        user = serializer.save()
-        if user.user_type == "patient":
-            medical_history = request.data.get("medical_history", "")
-            allergies = request.data.get("allergies", "")
-            emergency_contact = request.data.get("emergency_contact", "")
-            emergency_contact_name = request.data.get("emergency_contact_name", "")
-            blood_type = request.data.get("blood_type", "")
-            patient_data = {
-                "medical_history": medical_history if medical_history.strip() else None,
-                "allergies": allergies if allergies.strip() else None,
-                "emergency_contact": (
-                    emergency_contact if emergency_contact.strip() else None
-                ),
-                "emergency_contact_name": (
-                    emergency_contact_name if emergency_contact_name.strip() else None
-                ),
-                "blood_type": blood_type if blood_type.strip() else None,
-            }
-            Patient.objects.create(user=user, **patient_data)
-        elif user.user_type == "doctor":
-            clinic_data = request.data.get("new_clinic")
-            clinic_id = request.data.get("clinic")
-            from myproject.api.models import Doctor
-
-            license_number = request.data.get("license_number")
-
-            if Doctor.objects.filter(license_number=license_number).exists():
-                user.delete()
-                return Response(
-                    {"error": "A doctor with this license number already exists."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            if clinic_data:
-                clinic_serializer = ClinicSerializer(data=clinic_data)
-                if clinic_serializer.is_valid():
-                    clinic = clinic_serializer.save()
-                    doctor_data = {
-                        "specialization": request.data.get("specialization"),
-                        "license_number": request.data.get("license_number"),
-                        "clinic": clinic,
-                        "experience_years": request.data.get("experience_years", 0),
-                        "consultation_fee": request.data.get("consultation_fee", 0.00),
-                        "bio": request.data.get("bio", ""),
-                        "is_available": request.data.get("is_available", True),
-                    }
-                    Doctor.objects.create(user=user, **doctor_data)
+    if not serializer.is_valid():
+        logger.error(f"User serializer validation failed: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        with transaction.atomic():
+            # Create the user
+            user = serializer.save()
+            logger.info(f"User created successfully: {user.username}")
+            
+            if user.user_type == "patient":
+                # Handle patient registration
+                medical_history = request.data.get("medical_history", "")
+                allergies = request.data.get("allergies", "")
+                emergency_contact = request.data.get("emergency_contact", "")
+                emergency_contact_name = request.data.get("emergency_contact_name", "")
+                blood_type = request.data.get("blood_type", "")
+                
+                patient_data = {
+                    "medical_history": medical_history if medical_history.strip() else None,
+                    "allergies": allergies if allergies.strip() else None,
+                    "emergency_contact": (
+                        emergency_contact if emergency_contact.strip() else None
+                    ),
+                    "emergency_contact_name": (
+                        emergency_contact_name if emergency_contact_name.strip() else None
+                    ),
+                    "blood_type": blood_type if blood_type.strip() else None,
+                }
+                Patient.objects.create(user=user, **patient_data)
+                logger.info(f"Patient profile created for user: {user.username}")
+                
+            elif user.user_type == "doctor":
+                # Handle doctor registration with detailed validation
+                logger.info("Starting doctor profile creation")
+                
+                # Get clinic information
+                clinic_data = request.data.get("new_clinic")
+                clinic_id = request.data.get("clinic")
+                
+                # Validate required fields
+                license_number = request.data.get("license_number", "").strip()
+                specialization = request.data.get("specialization", "").strip()
+                
+                validation_errors = {}
+                
+                if not license_number:
+                    validation_errors["license_number"] = "License number is required for doctor registration."
+                
+                if not specialization:
+                    validation_errors["specialization"] = "Specialization is required for doctor registration."
+                
+                # Check if license number already exists
+                if license_number and Doctor.objects.filter(license_number=license_number).exists():
+                    validation_errors["license_number"] = "A doctor with this license number already exists."
+                
+                # Validate clinic information
+                clinic = None
+                if clinic_data:
+                    logger.info("Creating new clinic from provided data")
+                    clinic_serializer = ClinicSerializer(data=clinic_data)
+                    if clinic_serializer.is_valid():
+                        clinic = clinic_serializer.save()
+                        logger.info(f"New clinic created: {clinic.name}")
+                    else:
+                        validation_errors["clinic"] = clinic_serializer.errors
+                        logger.error(f"Clinic creation failed: {clinic_serializer.errors}")
+                        
+                elif clinic_id:
+                    try:
+                        clinic = Clinic.objects.get(id=clinic_id)
+                        logger.info(f"Using existing clinic: {clinic.name}")
+                    except Clinic.DoesNotExist:
+                        validation_errors["clinic"] = "Selected clinic does not exist"
+                        logger.error(f"Clinic with ID {clinic_id} not found")
                 else:
-                    user.delete()
-                    return Response(
-                        clinic_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                    )
-            elif clinic_id:
+                    validation_errors["clinic"] = "Clinic information is required for doctor registration"
+                
+                # If there are validation errors, raise them
+                if validation_errors:
+                    logger.error(f"Doctor validation errors: {validation_errors}")
+                    return Response(validation_errors, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Create doctor profile
                 try:
-                    clinic = Clinic.objects.get(id=clinic_id)
                     doctor_data = {
-                        "specialization": request.data.get("specialization"),
-                        "license_number": request.data.get("license_number"),
+                        "specialization": specialization,
+                        "license_number": license_number,
                         "clinic": clinic,
-                        "experience_years": request.data.get("experience_years", 0),
-                        "consultation_fee": request.data.get("consultation_fee", 0.00),
-                        "bio": request.data.get("bio", ""),
+                        "experience_years": int(request.data.get("experience_years", 0)),
+                        "consultation_fee": float(request.data.get("consultation_fee", 0.00)),
+                        "bio": request.data.get("bio", "").strip(),
                         "is_available": request.data.get("is_available", True),
                     }
-                    Doctor.objects.create(user=user, **doctor_data)
-                except Clinic.DoesNotExist:
-                    user.delete()
+                    
+                    doctor = Doctor.objects.create(user=user, **doctor_data)
+                    logger.info(f"Doctor profile created successfully: {doctor.id}")
+                    
+                except Exception as e:
+                    logger.error(f"Error creating doctor profile: {str(e)}")
                     return Response(
-                        {"error": "Selected clinic does not exist"},
+                        {"error": f"Failed to create doctor profile: {str(e)}"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-            else:
-                user.delete()
-                return Response(
-                    {"error": "Clinic information is required for doctor registration"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "message": "User registered successfully",
-                "user": UserSerializer(user).data,
-                "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
+            
+            # Generate tokens for successful registration
+            refresh = RefreshToken.for_user(user)
+            logger.info(f"Registration completed successfully for user: {user.username}")
+            
+            return Response(
+                {
+                    "message": "User registered successfully",
+                    "user": UserSerializer(user).data,
+                    "tokens": {
+                        "refresh": str(refresh),
+                        "access": str(refresh.access_token),
+                    },
                 },
-            },
-            status=status.HTTP_201_CREATED,
+                status=status.HTTP_201_CREATED,
+            )
+            
+    except Exception as e:
+        logger.error(f"Registration failed with exception: {str(e)}", exc_info=True)
+        return Response(
+            {"error": f"Registration failed: {str(e)}"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -452,3 +502,93 @@ class DoctorScheduleCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         doctor = get_object_or_404(Doctor, user=self.request.user)
         serializer.save(doctor=doctor)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])  # Change to IsAdmin in production
+def cleanup_orphaned_users(request):
+    """
+    Debug endpoint to clean up users without corresponding profiles.
+    Should be restricted to admin users in production.
+    """
+    try:
+        # Find users without corresponding profiles
+        orphaned_doctors = User.objects.filter(
+            user_type="doctor"
+        ).exclude(
+            id__in=Doctor.objects.values_list('user_id', flat=True)
+        )
+        
+        orphaned_patients = User.objects.filter(
+            user_type="patient"
+        ).exclude(
+            id__in=Patient.objects.values_list('user_id', flat=True)
+        )
+        
+        # Count before deletion
+        doctor_count = orphaned_doctors.count()
+        patient_count = orphaned_patients.count()
+        
+        # Delete orphaned users
+        orphaned_doctors.delete()
+        orphaned_patients.delete()
+        
+        return Response({
+            "message": f"Cleaned up {doctor_count} orphaned doctor users and {patient_count} orphaned patient users",
+            "deleted_doctors": doctor_count,
+            "deleted_patients": patient_count
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error cleaning up orphaned users: {str(e)}")
+        return Response(
+            {"error": f"Cleanup failed: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])  # Change to IsAdmin in production
+def debug_users(request):
+    """
+    Debug endpoint to see user registration status.
+    Should be restricted to admin users in production.
+    """
+    try:
+        total_users = User.objects.count()
+        doctor_users = User.objects.filter(user_type="doctor").count()
+        patient_users = User.objects.filter(user_type="patient").count()
+        admin_users = User.objects.filter(user_type="admin").count()
+        
+        doctor_profiles = Doctor.objects.count()
+        patient_profiles = Patient.objects.count()
+        
+        orphaned_doctors = User.objects.filter(
+            user_type="doctor"
+        ).exclude(
+            id__in=Doctor.objects.values_list('user_id', flat=True)
+        ).count()
+        
+        orphaned_patients = User.objects.filter(
+            user_type="patient"
+        ).exclude(
+            id__in=Patient.objects.values_list('user_id', flat=True)
+        ).count()
+        
+        return Response({
+            "total_users": total_users,
+            "doctor_users": doctor_users,
+            "patient_users": patient_users,
+            "admin_users": admin_users,
+            "doctor_profiles": doctor_profiles,
+            "patient_profiles": patient_profiles,
+            "orphaned_doctors": orphaned_doctors,
+            "orphaned_patients": orphaned_patients,
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error in debug_users: {str(e)}")
+        return Response(
+            {"error": f"Debug failed: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
