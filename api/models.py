@@ -230,23 +230,64 @@ class DoctorSchedule(models.Model):
         ("Sunday", "Sunday"),
     )
 
+    SCHEDULE_TYPE_CHOICES = (
+        ("recurring", "Recurring Weekly"),
+        ("specific", "Specific Date"),
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     doctor = models.ForeignKey(
         Doctor, on_delete=models.CASCADE, related_name="schedules"
     )
-    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    schedule_type = models.CharField(
+        max_length=10, choices=SCHEDULE_TYPE_CHOICES, default="recurring"
+    )
+    # For recurring schedules
+    day = models.CharField(max_length=10, choices=DAY_CHOICES, blank=True, null=True)
+    # For specific date schedules
+    specific_date = models.DateField(blank=True, null=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
     is_available = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, null=True, help_text="Optional notes (e.g., 'Holiday', 'Conference')")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "doctor_schedules"
-        unique_together = ["doctor", "day"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['doctor', 'day'],
+                condition=models.Q(schedule_type='recurring'),
+                name='unique_doctor_recurring_day'
+            ),
+            models.UniqueConstraint(
+                fields=['doctor', 'specific_date'],
+                condition=models.Q(schedule_type='specific'),
+                name='unique_doctor_specific_date'
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.schedule_type == "recurring" and not self.day:
+            raise ValidationError("Day is required for recurring schedules.")
+        if self.schedule_type == "specific" and not self.specific_date:
+            raise ValidationError("Specific date is required for specific date schedules.")
+        if self.schedule_type == "recurring" and self.specific_date:
+            raise ValidationError("Specific date should not be set for recurring schedules.")
+        if self.schedule_type == "specific" and self.day:
+            raise ValidationError("Day should not be set for specific date schedules.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.doctor.user.get_full_name()} - {self.day} ({self.start_time}-{self.end_time})"
+        if self.schedule_type == "recurring":
+            return f"{self.doctor.user.get_full_name()} - {self.day} ({self.start_time}-{self.end_time})"
+        else:
+            return f"{self.doctor.user.get_full_name()} - {self.specific_date} ({self.start_time}-{self.end_time})"
 
 
 class Appointment(models.Model):

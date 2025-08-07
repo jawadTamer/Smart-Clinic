@@ -233,6 +233,41 @@ class PatientForm(forms.ModelForm):
 
 
 # -------------------------------
+# DoctorSchedule Form
+# -------------------------------
+class DoctorScheduleForm(forms.ModelForm):
+    class Meta:
+        model = DoctorSchedule
+        fields = ["schedule_type", "day", "specific_date", "start_time", "end_time", "is_available", "notes"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add some help text
+        self.fields["schedule_type"].help_text = "Choose 'Recurring Weekly' for regular weekly schedule or 'Specific Date' for one-time availability"
+        self.fields["day"].help_text = "Only required for recurring schedules"
+        self.fields["specific_date"].help_text = "Only required for specific date schedules"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        schedule_type = cleaned_data.get("schedule_type")
+        day = cleaned_data.get("day")
+        specific_date = cleaned_data.get("specific_date")
+
+        if schedule_type == "recurring":
+            if not day:
+                self.add_error("day", "Day is required for recurring schedules.")
+            if specific_date:
+                self.add_error("specific_date", "Specific date should not be set for recurring schedules.")
+        elif schedule_type == "specific":
+            if not specific_date:
+                self.add_error("specific_date", "Specific date is required for specific date schedules.")
+            if day:
+                self.add_error("day", "Day should not be set for specific date schedules.")
+
+        return cleaned_data
+
+
+# -------------------------------
 # Admin Registration
 # -------------------------------
 @admin.register(User)
@@ -271,10 +306,39 @@ class ClinicAdmin(admin.ModelAdmin):
 
 @admin.register(DoctorSchedule)
 class DoctorScheduleAdmin(admin.ModelAdmin):
-    list_display = ["doctor", "day", "start_time", "end_time", "is_available"]
-    list_filter = ["day", "is_available", "doctor__specialization"]
+    form = DoctorScheduleForm
+    list_display = ["doctor", "schedule_type", "day", "specific_date", "start_time", "end_time", "is_available"]
+    list_filter = ["schedule_type", "day", "is_available", "doctor__specialization", "specific_date"]
     search_fields = ["doctor__user__first_name", "doctor__user__last_name"]
-    ordering = ["doctor__user__first_name", "day"]
+    ordering = ["doctor__user__first_name", "schedule_type", "day", "specific_date"]
+    
+    fieldsets = (
+        ("Doctor", {
+            "fields": ("doctor",)
+        }),
+        ("Schedule Type", {
+            "fields": ("schedule_type",),
+            "description": "Choose between recurring weekly schedule or specific date schedule"
+        }),
+        ("Recurring Schedule", {
+            "fields": ("day",),
+            "description": "For weekly recurring schedules only"
+        }),
+        ("Specific Date Schedule", {
+            "fields": ("specific_date",),
+            "description": "For one-time or specific date schedules only"
+        }),
+        ("Time & Availability", {
+            "fields": ("start_time", "end_time", "is_available")
+        }),
+        ("Additional Info", {
+            "fields": ("notes",),
+            "classes": ("collapse",)
+        })
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('doctor__user')
 
 
 @admin.register(Appointment)

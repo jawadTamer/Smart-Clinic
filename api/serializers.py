@@ -208,7 +208,25 @@ class DoctorScheduleSerializer(serializers.ModelSerializer):
 class DoctorScheduleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorSchedule
-        fields = ["day", "start_time", "end_time", "is_available"]
+        fields = ["schedule_type", "day", "specific_date", "start_time", "end_time", "is_available", "notes"]
+
+    def validate(self, attrs):
+        schedule_type = attrs.get("schedule_type")
+        day = attrs.get("day")
+        specific_date = attrs.get("specific_date")
+
+        if schedule_type == "recurring":
+            if not day:
+                raise serializers.ValidationError("Day is required for recurring schedules.")
+            if specific_date:
+                raise serializers.ValidationError("Specific date should not be set for recurring schedules.")
+        elif schedule_type == "specific":
+            if not specific_date:
+                raise serializers.ValidationError("Specific date is required for specific date schedules.")
+            if day:
+                raise serializers.ValidationError("Day should not be set for specific date schedules.")
+
+        return attrs
 
 
 class DoctorSerializer(serializers.ModelSerializer):
@@ -274,22 +292,49 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
 
         day_name = appointment_date.strftime("%A")
 
-        try:
-            schedule = DoctorSchedule.objects.get(doctor=doctor, day=day_name)
-            if not schedule.is_available:
+        # First, check for specific date schedule
+        specific_schedule = DoctorSchedule.objects.filter(
+            doctor=doctor,
+            schedule_type="specific",
+            specific_date=appointment_date
+        ).first()
+
+        if specific_schedule:
+            # Use specific date schedule
+            if not specific_schedule.is_available:
                 raise serializers.ValidationError(
-                    "Doctor is not available on this day."
+                    "Doctor is not available on this specific date."
                 )
 
             if (
-                appointment_time < schedule.start_time
-                or appointment_time > schedule.end_time
+                appointment_time < specific_schedule.start_time
+                or appointment_time > specific_schedule.end_time
             ):
                 raise serializers.ValidationError(
-                    "Appointment time is outside doctor's working hours."
+                    "Appointment time is outside doctor's working hours for this date."
                 )
-        except DoctorSchedule.DoesNotExist:
-            raise serializers.ValidationError("Doctor has no schedule for this day.")
+        else:
+            # Fall back to recurring schedule
+            try:
+                recurring_schedule = DoctorSchedule.objects.get(
+                    doctor=doctor, 
+                    schedule_type="recurring",
+                    day=day_name
+                )
+                if not recurring_schedule.is_available:
+                    raise serializers.ValidationError(
+                        "Doctor is not available on this day."
+                    )
+
+                if (
+                    appointment_time < recurring_schedule.start_time
+                    or appointment_time > recurring_schedule.end_time
+                ):
+                    raise serializers.ValidationError(
+                        "Appointment time is outside doctor's working hours."
+                    )
+            except DoctorSchedule.DoesNotExist:
+                raise serializers.ValidationError("Doctor has no schedule for this day.")
 
         # Check if appointment time is not already booked
         existing_appointment = Appointment.objects.filter(
