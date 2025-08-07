@@ -74,9 +74,11 @@ urlpatterns = [
     ),
     # Admin
     path("admin/users/", views.AdminUserListView.as_view(), name="admin_users"),
+    # Clinics
     path("clinics/", views.list_clinics_public, name="list_clinics_public"),
+    path("clinics/<uuid:id>/", views.ClinicDetailView.as_view(), name="clinic_detail"),
+    path("clinics/<uuid:clinic_id>/doctors/", views.ClinicDoctorsView.as_view(), name="clinic_doctors"),
     path("clinics/create/", views.create_clinic_public, name="create_clinic_public"),
-    # Debug endpoints (should be restricted to admin in production)
     path("debug/users/", views.debug_users, name="debug_users"),
     path("debug/cleanup-orphaned/", views.cleanup_orphaned_users, name="cleanup_orphaned_users"),
     path("", include(router.urls)),

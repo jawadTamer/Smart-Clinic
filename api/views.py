@@ -24,6 +24,7 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     ClinicSerializer,
+    ClinicDetailSerializer,
     DoctorSerializer,
     DoctorDetailSerializer,
     PatientSerializer,
@@ -429,6 +430,26 @@ def list_clinics_public(request):
     clinics = Clinic.objects.filter(is_active=True)
     serializer = ClinicSerializer(clinics, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ClinicDetailView(generics.RetrieveAPIView):
+    serializer_class = ClinicDetailSerializer
+    permission_classes = [AllowAny]
+    queryset = Clinic.objects.filter(is_active=True)
+    lookup_field = "id"
+
+
+class ClinicDoctorsView(generics.ListAPIView):
+    serializer_class = DoctorSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        clinic_id = self.kwargs.get("clinic_id")
+        return Doctor.objects.filter(
+            clinic_id=clinic_id,
+            is_available=True,
+            user__is_active=True
+        ).select_related('user', 'clinic').prefetch_related('schedules')
 
 
 @api_view(["POST"])

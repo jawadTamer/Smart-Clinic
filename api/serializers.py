@@ -198,6 +198,23 @@ class ClinicSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
+class ClinicDetailSerializer(serializers.ModelSerializer):
+    doctors = serializers.SerializerMethodField()
+    doctors_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Clinic
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_doctors(self, obj):
+        doctors = obj.doctors.filter(is_available=True, user__is_active=True)
+        return DoctorSerializer(doctors, many=True).data
+
+    def get_doctors_count(self, obj):
+        return obj.doctors.filter(is_available=True, user__is_active=True).count()
+
+
 class DoctorScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorSchedule
