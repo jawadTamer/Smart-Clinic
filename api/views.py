@@ -370,6 +370,22 @@ class AppointmentListView(generics.ListAPIView):
         return Appointment.objects.none()
 
 
+class PatientAppointmentListView(generics.ListAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsPatientOrDoctorOrAdmin]
+
+    def get_queryset(self):
+        patient_id = self.kwargs.get("patient_id")
+        user = self.request.user
+        
+        if user.user_type == "patient":
+            patient = get_object_or_404(Patient, user=user)
+            if str(patient.id) != patient_id:
+                return Appointment.objects.none()
+        
+        return Appointment.objects.filter(patient_id=patient_id)
+
+
 class AppointmentDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = AppointmentUpdateSerializer
     permission_classes = [IsAppointmentOwnerOrDoctor]
@@ -502,6 +518,57 @@ class DoctorScheduleCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         doctor = get_object_or_404(Doctor, user=self.request.user)
         serializer.save(doctor=doctor)
+
+
+class DoctorScheduleDeleteView(generics.DestroyAPIView):
+    serializer_class = DoctorScheduleSerializer
+    permission_classes = [IsDoctor]
+    lookup_field = "id"
+
+    def get_queryset(self):
+        return DoctorSchedule.objects.filter(doctor__user=self.request.user)
+
+    def get_object(self):
+        schedule_id = self.kwargs.get("id")
+        doctor = get_object_or_404(Doctor, user=self.request.user)
+        return get_object_or_404(DoctorSchedule, id=schedule_id, doctor=doctor)
+
+    def perform_destroy(self, instance):
+        if instance.schedule_type == "specific":
+            conflicting_appointments = Appointment.objects.filter(
+                doctor=instance.doctor,
+                appointment_date=instance.specific_date,
+                status__in=["pending", "confirmed"]
+            ).exists()
+        else:
+            from datetime import datetime, timedelta
+            
+            today = datetime.now().date()
+            future_date = today + timedelta(days=30)
+            
+            conflicting_appointments = Appointment.objects.filter(
+                doctor=instance.doctor,
+                appointment_date__gte=today,
+                appointment_date__lte=future_date,
+                appointment_date__week_day=self.get_weekday_number(instance.day),
+                status__in=["pending", "confirmed"]
+            ).exists()
+
+        if conflicting_appointments:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError(
+                "Cannot delete schedule with existing appointments. Please cancel or complete appointments first."
+            )
+        
+        instance.delete()
+
+    def get_weekday_number(self, day_name):
+        """Convert day name to Django week_day number (1=Sunday, 2=Monday, etc.)"""
+        day_mapping = {
+            "Sunday": 1, "Monday": 2, "Tuesday": 3, "Wednesday": 4,
+            "Thursday": 5, "Friday": 6, "Saturday": 7
+        }
+        return day_mapping.get(day_name, 1)
 
 
 @api_view(["POST"])

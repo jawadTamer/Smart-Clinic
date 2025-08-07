@@ -41,6 +41,11 @@ urlpatterns = [
         name="doctor_schedule_create",
     ),
     path(
+        "doctors/schedule/<uuid:id>/delete/",
+        views.DoctorScheduleDeleteView.as_view(),
+        name="doctor_schedule_delete",
+    ),
+    path(
         "doctors/available/",
         views.AvailableDoctorsView.as_view(),
         name="available_doctors",
@@ -61,6 +66,11 @@ urlpatterns = [
         "appointments/<uuid:id>/",
         views.AppointmentDetailView.as_view(),
         name="appointment_detail",
+    ),
+    path(
+        "patients/<uuid:patient_id>/appointments/",
+        views.PatientAppointmentListView.as_view(),
+        name="patient_appointments",
     ),
     # Admin
     path("admin/users/", views.AdminUserListView.as_view(), name="admin_users"),
