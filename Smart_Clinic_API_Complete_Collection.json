@@ -1,0 +1,1152 @@
+{
+	"info": {
+		"_postman_id": "smart-clinic-complete-api-collection",
+		"name": "🏥 Smart Clinic Platform - Complete API Collection",
+		"description": "# 🏥 Smart Clinic Platform - Comprehensive Healthcare Management System\n\nThis is the complete API collection for the Smart Clinic platform, a comprehensive healthcare management system designed to streamline patient care, doctor scheduling, and clinic administration.\n\n## 🚀 Core System Features\n\n### 1. **Multi-Role User System**\n- **Patient**: Book appointments, view medical profile, update personal information\n- **Doctor**: Manage schedule, view appointments, access patient profiles  \n- **Admin**: Full system management permissions\n\n### 2. **Enhanced Doctor Management**\n- **Specializations**: Cardiology, Dermatology, Neurology, Orthopedics, Pediatrics, Psychiatry, General, Dental, Eye, Surgery\n- **Dual Schedule System**: Recurring weekly schedules + specific date schedules\n- **Professional Data**: License number, experience, consultation fees\n- **Schedule CRUD**: Complete create, read, update, delete operations\n\n### 3. **Smart Appointment System**\n- **Intelligent Booking**: Validates against both recurring and specific date schedules\n- **Conflict Prevention**: Prevents double booking and scheduling conflicts\n- **Patient-Specific Views**: Dedicated endpoints for patient appointment management\n- **Status Management**: Comprehensive appointment lifecycle tracking\n\n### 4. **Enhanced Clinic Management**\n- **Clinic Details**: Complete clinic information with associated doctors\n- **Doctor Integration**: Get all doctors working in specific clinics\n- **Public Access**: Core clinic information available without authentication\n- **Admin Controls**: Full clinic management for administrators\n\n### 5. **Robust Authentication & Security**\n- **JWT Authentication**: Access and refresh token system\n- **Role-Based Permissions**: Granular access control by user type\n- **Data Protection**: Users can only access their own data (with exceptions for doctors/admins)\n- **Secure Endpoints**: All sensitive operations require proper authentication\n\n## 🌐 Environment Configuration\n\n### Production Environment\n- **Base URL**: `https://smart-clinic-api.fly.dev/api/`\n- **Status**: Live and ready for production use\n- **Features**: Full feature set with production security\n\n### Development Environment  \n- **Base URL**: `http://127.0.0.1:8000/api/`\n- **Status**: Local development server\n- **Features**: Debug endpoints enabled\n\n## 📋 Complete API Endpoints\n\n### 🔐 Authentication System\n- `POST /auth/register/` - User registration with role selection\n- `POST /auth/login/` - JWT token authentication\n- `POST /auth/token/refresh/` - Token renewal\n- `GET /users/me/` - Current user profile\n- `PUT /users/update-profile/` - Profile updates\n- `POST /users/upload-profile-image/` - Profile image upload\n\n### 👨‍⚕️ Doctor Management\n- `GET /doctors/` - List all doctors with filtering\n- `GET /doctors/{id}/` - Detailed doctor information\n- `GET /doctors/available/` - Available doctors with date/time filtering\n- `GET /doctors/{doctor_id}/schedules/` - Doctor schedule overview\n\n### 📅 Enhanced Schedule Management\n- `POST /doctors/schedule/create/` - Create recurring or specific date schedules\n- `PUT /doctors/schedule/{schedule_id}/` - Update existing schedules\n- `DELETE /doctors/schedule/{id}/delete/` - **NEW**: Delete schedules with safety checks\n\n### 🧑‍🦱 Patient Management\n- `GET /patients/me/` - Patient's own profile\n- `GET /patients/{id}/` - Specific patient details (doctors/admin only)\n- `GET /patients/{patient_id}/appointments/` - **NEW**: Patient-specific appointments\n\n### 📝 Smart Appointment System\n- `GET /appointments/` - User-filtered appointment list\n- `POST /appointments/create/` - Smart appointment booking with validation\n- `GET /appointments/{id}/` - Detailed appointment information\n- `PUT /appointments/{id}/` - Appointment status updates\n\n### 🏥 Enhanced Clinic Management\n- `GET /clinics/` - Public clinic directory\n- `GET /clinics/{id}/` - **NEW**: Clinic details with doctor list\n- `GET /clinics/{clinic_id}/doctors/` - **NEW**: Doctors in specific clinic\n- `POST /clinics/create/` - Public clinic creation\n\n### 👑 Administrative Controls\n- `GET /admin/users/` - Complete user management\n- `GET /admin/clinics/` - Full clinic administration\n- `POST /admin/clinics/` - Administrative clinic creation\n\n### 🔧 Development Tools\n- `GET /debug/users/` - User debugging information\n- `POST /debug/cleanup-orphaned/` - Clean orphaned user records\n- `GET /media/{file_path}` - Media file serving\n\n## 🆕 Latest Enhancements\n\n### ✨ Enhanced Schedule System\n- **Dual Schedule Types**: Support for both recurring weekly and specific date schedules\n- **Smart Validation**: Specific dates override recurring schedules for appointments\n- **Safety Checks**: Prevent deletion of schedules with existing appointments\n\n### ✨ Clinic-Doctor Integration\n- **Complete Clinic Views**: Get clinic information with all associated doctors\n- **Doctor Filtering**: View only doctors working in specific clinics\n- **Relationship Management**: Proper handling of clinic-doctor associations\n\n### ✨ Patient-Centric Features\n- **Dedicated Endpoints**: Patient-specific appointment views\n- **Enhanced Privacy**: Improved data access controls\n- **Better UX**: Streamlined patient experience\n\n## 🧪 Testing Guidelines\n\n### Authentication Testing\n1. Register users with different roles (patient, doctor, admin)\n2. Test login and token refresh functionality\n3. Verify JWT tokens are properly set in environment variables\n\n### Permission Testing\n1. Test role-based access restrictions\n2. Verify patients can only access their own data\n3. Confirm doctors can access patient profiles\n4. Validate admin has full system access\n\n### Feature Testing\n1. Test both recurring and specific date schedule creation\n2. Verify appointment booking against different schedule types\n3. Test clinic-doctor relationship endpoints\n4. Validate schedule deletion safety checks\n\n### Error Handling\n1. Test invalid authentication scenarios\n2. Verify proper error messages for validation failures\n3. Test edge cases and boundary conditions\n\n## 🔑 Environment Variables\n\nThe collection uses these environment variables for dynamic testing:\n- `base_url` - API base URL (production or development)\n- `access_token` - JWT access token for authentication\n- `refresh_token` - JWT refresh token\n- `user_id`, `doctor_id`, `patient_id` - User identifiers\n- `appointment_id`, `clinic_id`, `schedule_id` - Resource identifiers\n\n## 🌍 Production Deployment\n\n**Live API**: https://smart-clinic-api.fly.dev/api/\n\n- ✅ Production-ready security settings\n- ✅ PostgreSQL database\n- ✅ Media file handling\n- ✅ CORS configuration for frontend integration\n- ✅ Environment-based configuration\n\n## 📞 Support & Documentation\n\nFor technical support, feature requests, or bug reports:\n- Review the API documentation within each endpoint\n- Check the comprehensive test examples\n- Verify environment variable configuration\n- Test with different user roles for complete coverage\n\n## 🔄 Version Information\n\n**Collection Version**: v2.0 - Complete Feature Set\n**API Version**: Latest with all enhancements\n**Last Updated**: August 2025\n\n---\n\n**Ready to use with both development and production environments!**",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication & User Management",
+			"description": "Complete user authentication system with JWT tokens and profile management",
+			"item": [
+				{
+					"name": "Register New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Auto-extract user data if registration successful",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.user && response.user.id) {",
+									"        pm.environment.set('user_id', response.user.id);",
+									"        console.log('User registered successfully with ID:', response.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testpatient\",\n  \"email\": \"testpatient@example.com\",\n  \"password\": \"password123\",\n  \"password2\": \"password123\",\n  \"first_name\": \"أحمد\",\n  \"last_name\": \"محمد\",\n  \"user_type\": \"patient\",\n  \"phone\": \"01012345678\",\n  \"address\": \"القاهرة، مصر\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"gender\": \"M\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								""
+							]
+						},
+						"description": "Register a new user with role selection (patient, doctor, admin). Automatically extracts user ID for subsequent requests."
+					}
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Auto-extract tokens and user information",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    // Set authentication tokens",
+									"    pm.environment.set('access_token', response.access_token);",
+									"    pm.environment.set('refresh_token', response.refresh_token);",
+									"    ",
+									"    // Set user information",
+									"    if (response.user) {",
+									"        pm.environment.set('user_id', response.user.id);",
+									"        ",
+									"        // Set role-specific IDs",
+									"        if (response.user.doctor_id) {",
+									"            pm.environment.set('doctor_id', response.user.doctor_id);",
+									"        }",
+									"        if (response.user.patient_id) {",
+									"            pm.environment.set('patient_id', response.user.patient_id);",
+									"        }",
+									"    }",
+									"    ",
+									"    console.log('Login successful! Tokens and user data saved to environment.');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testpatient\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login",
+								""
+							]
+						},
+						"description": "Authenticate user and receive JWT tokens. Automatically stores tokens and user information in environment variables."
+					}
+				},
+				{
+					"name": "Refresh Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Update access token",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('access_token', response.access);",
+									"    console.log('Access token refreshed successfully!');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/token/refresh/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"token",
+								"refresh",
+								""
+							]
+						},
+						"description": "Refresh expired access token using refresh token."
+					}
+				},
+				{
+					"name": "Get Current User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/me/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me",
+								""
+							]
+						},
+						"description": "Get current authenticated user's profile information including role-specific data."
+					}
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"أحمد المحدث\",\n  \"last_name\": \"محمد\",\n  \"phone\": \"01012345678\",\n  \"address\": \"القاهرة الجديدة، مصر\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/update-profile/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"update-profile",
+								""
+							]
+						},
+						"description": "Update current user's profile information."
+					}
+				},
+				{
+					"name": "Upload Profile Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile_picture",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/upload-profile-image/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"upload-profile-image",
+								""
+							]
+						},
+						"description": "Upload a profile picture for the current user."
+					}
+				}
+			]
+		},
+		{
+			"name": "👨‍⚕️ Doctor Management",
+			"description": "Doctor information, availability, and professional data management",
+			"item": [
+				{
+					"name": "Get All Doctors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								""
+							]
+						},
+						"description": "Retrieve a list of all doctors in the system with their basic information and specializations."
+					}
+				},
+				{
+					"name": "Get Doctor Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Auto-extract doctor ID for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.id) {",
+									"        pm.environment.set('doctor_id', response.id);",
+									"        console.log('Doctor ID saved:', response.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/{{doctor_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"{{doctor_id}}",
+								""
+							]
+						},
+						"description": "Get detailed information about a specific doctor including specialization, experience, clinic, and schedule information."
+					}
+				},
+				{
+					"name": "Get Available Doctors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/available/?date=2025-08-10&time=14:30",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"available",
+								""
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-08-10",
+									"description": "Filter by specific date (YYYY-MM-DD)"
+								},
+								{
+									"key": "time",
+									"value": "14:30",
+									"description": "Filter by specific time (HH:MM)"
+								}
+							]
+						},
+						"description": "Find doctors available at a specific date and time. Supports filtering by specialization, date, and time."
+					}
+				}
+			]
+		},
+		{
+			"name": "📅 Enhanced Schedule Management",
+			"description": "Complete schedule CRUD operations with support for recurring and specific date schedules",
+			"item": [
+				{
+					"name": "Get Doctor Schedules",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/{{doctor_id}}/schedules/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"{{doctor_id}}",
+								"schedules",
+								""
+							]
+						},
+						"description": "Retrieve all schedules for a specific doctor, including both recurring weekly schedules and specific date schedules."
+					}
+				},
+				{
+					"name": "Create Recurring Weekly Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save schedule ID for updates/deletions",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.id) {",
+									"        pm.environment.set('schedule_id', response.id);",
+									"        console.log('Recurring schedule created with ID:', response.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"schedule_type\": \"recurring\",\n  \"day\": \"Monday\",\n  \"start_time\": \"09:00:00\",\n  \"end_time\": \"17:00:00\",\n  \"is_available\": true,\n  \"notes\": \"Regular Monday working hours\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/doctors/schedule/create/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"schedule",
+								"create",
+								""
+							]
+						},
+						"description": "Create a recurring weekly schedule that repeats every week on the specified day. Valid days: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday."
+					}
+				},
+				{
+					"name": "Create Specific Date Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save schedule ID for updates/deletions",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.id) {",
+									"        pm.environment.set('specific_schedule_id', response.id);",
+									"        console.log('Specific date schedule created with ID:', response.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"schedule_type\": \"specific\",\n  \"specific_date\": \"2025-08-15\",\n  \"start_time\": \"10:00:00\",\n  \"end_time\": \"14:00:00\",\n  \"is_available\": true,\n  \"notes\": \"Special holiday hours - Eid celebration\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/doctors/schedule/create/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"schedule",
+								"create",
+								""
+							]
+						},
+						"description": "Create a schedule for a specific date that overrides any recurring schedule. Perfect for holidays, special events, or one-time schedule changes."
+					}
+				},
+				{
+					"name": "Update Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"start_time\": \"08:00:00\",\n  \"end_time\": \"16:00:00\",\n  \"is_available\": true,\n  \"notes\": \"Updated working hours - earlier start\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/doctors/schedule/{{schedule_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"schedule",
+								"{{schedule_id}}",
+								""
+							]
+						},
+						"description": "Update an existing schedule. Can modify times, availability status, and notes."
+					}
+				},
+				{
+					"name": "Delete Schedule (NEW)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/schedule/{{schedule_id}}/delete/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"doctors",
+								"schedule",
+								"{{schedule_id}}",
+								"delete",
+								""
+							]
+						},
+						"description": "🆕 Delete a doctor's schedule with safety checks. Prevents deletion if there are existing appointments scheduled during this time."
+					}
+				}
+			]
+		},
+		{
+			"name": "🧑‍🦱 Patient Management",
+			"description": "Patient profile access and medical information management",
+			"item": [
+				{
+					"name": "Get My Patient Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/me/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"me",
+								""
+							]
+						},
+						"description": "Get the authenticated patient's own profile including medical history, allergies, and emergency contact information."
+					}
+				},
+				{
+					"name": "Get Specific Patient (Doctor/Admin Access)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"{{patient_id}}",
+								""
+							]
+						},
+						"description": "Access specific patient information. Restricted to doctors and administrators for medical purposes."
+					}
+				}
+			]
+		},
+		{
+			"name": "📝 Smart Appointment System",
+			"description": "Enhanced appointment management with intelligent scheduling and validation",
+			"item": [
+				{
+					"name": "Get My Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/appointments/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								""
+							]
+						},
+						"description": "Get appointments filtered by user role - patients see their own appointments, doctors see their scheduled appointments."
+					}
+				},
+				{
+					"name": "Get Patient Appointments (NEW)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}/appointments/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"{{patient_id}}",
+								"appointments",
+								""
+							]
+						},
+						"description": "🆕 Get appointments for a specific patient. Patients can only access their own appointments, doctors/admins can access any patient's appointments."
+					}
+				},
+				{
+					"name": "Create Smart Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save appointment ID for subsequent operations",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.id) {",
+									"        pm.environment.set('appointment_id', response.id);",
+									"        console.log('Appointment created successfully with ID:', response.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"doctor\": \"{{doctor_id}}\",\n  \"appointment_date\": \"2025-08-10\",\n  \"appointment_time\": \"14:30:00\",\n  \"reason\": \"Regular checkup and blood pressure monitoring\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/appointments/create/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"create",
+								""
+							]
+						},
+						"description": "Create a new appointment with intelligent validation. The system checks specific date schedules first, then falls back to recurring schedules. Prevents double booking and validates doctor availability."
+					}
+				},
+				{
+					"name": "Get Appointment Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/appointments/{{appointment_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointment_id}}",
+								""
+							]
+						},
+						"description": "Get detailed information about a specific appointment including patient, doctor, and status information."
+					}
+				},
+				{
+					"name": "Update Appointment Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"confirmed\",\n  \"notes\": \"Patient confirmed attendance via phone call\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/appointments/{{appointment_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointment_id}}",
+								""
+							]
+						},
+						"description": "Update appointment status and add notes. Available statuses: pending, confirmed, cancelled, completed, no-show."
+					}
+				}
+			]
+		},
+		{
+			"name": "🏥 Enhanced Clinic Management",
+			"description": "Complete clinic information with doctor integration and management tools",
+			"item": [
+				{
+					"name": "Get All Clinics (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinics/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinics",
+								""
+							]
+						},
+						"description": "Get a list of all active clinics. Public endpoint - no authentication required."
+					}
+				},
+				{
+					"name": "Get Clinic Details with Doctors (NEW)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save clinic ID for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.id) {",
+									"        pm.environment.set('clinic_id', response.id);",
+									"        console.log('Clinic ID saved:', response.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinics/{{clinic_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinics",
+								"{{clinic_id}}",
+								""
+							]
+						},
+						"description": "🆕 Get comprehensive clinic information including all doctors working at the clinic with their specializations and schedules."
+					}
+				},
+				{
+					"name": "Get Clinic Doctors Only (NEW)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clinics/{{clinic_id}}/doctors/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinics",
+								"{{clinic_id}}",
+								"doctors",
+								""
+							]
+						},
+						"description": "🆕 Get only the list of doctors working in a specific clinic, without the full clinic details."
+					}
+				},
+				{
+					"name": "Create Clinic (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save created clinic ID",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.id) {",
+									"        pm.environment.set('new_clinic_id', response.id);",
+									"        console.log('New clinic created with ID:', response.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"عيادة القلب المتخصصة\",\n  \"address\": \"شارع النيل، القاهرة، مصر\",\n  \"phone\": \"02234567890\",\n  \"email\": \"info@heartclinic.com\",\n  \"description\": \"عيادة متخصصة في أمراض القلب والأوعية الدموية مع أحدث التقنيات الطبية\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/clinics/create/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clinics",
+								"create",
+								""
+							]
+						},
+						"description": "Create a new clinic. Public endpoint for clinic registration."
+					}
+				}
+			]
+		},
+		{
+			"name": "👑 Administrative Controls",
+			"description": "Administrative endpoints for system management and oversight",
+			"item": [
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								""
+							]
+						},
+						"description": "Get a complete list of all users in the system. Admin access only."
+					}
+				},
+				{
+					"name": "Get All Clinics (Admin ViewSet)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/clinics/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"clinics",
+								""
+							]
+						},
+						"description": "Administrative view of all clinics with full management capabilities."
+					}
+				},
+				{
+					"name": "Create Clinic (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"مركز العيون المتقدم\",\n  \"description\": \"مركز متخصص في جراحات العيون والليزر مع فريق طبي متميز\",\n  \"address\": \"شارع التحرير، القاهرة، مصر\",\n  \"phone\": \"02212345678\",\n  \"email\": \"info@eyecenter.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/clinics/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"clinics",
+								""
+							]
+						},
+						"description": "Create a new clinic through the administrative interface."
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 Development Tools",
+			"description": "Debug endpoints and development utilities",
+			"item": [
+				{
+					"name": "Debug Users Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/debug/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debug",
+								"users",
+								""
+							]
+						},
+						"description": "Development endpoint to debug user data and relationships."
+					}
+				},
+				{
+					"name": "Cleanup Orphaned Users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/debug/cleanup-orphaned/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debug",
+								"cleanup-orphaned",
+								""
+							]
+						},
+						"description": "Clean up orphaned user records that may have been created during development."
+					}
+				},
+				{
+					"name": "Get Media File",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/media/profile_pictures/sample.jpg",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"media",
+								"profile_pictures",
+								"sample.jpg"
+							]
+						},
+						"description": "Access uploaded media files like profile pictures."
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"// Add any global headers or authentication logic here"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"// Add any global response validation here"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://smart-clinic-api.fly.dev/api",
+			"type": "string",
+			"description": "API base URL - Production environment"
+		},
+		{
+			"key": "base_url_dev",
+			"value": "http://127.0.0.1:8000/api",
+			"type": "string",
+			"description": "API base URL - Development environment"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT access token for authentication"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT refresh token for token renewal"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string",
+			"description": "Current authenticated user ID"
+		},
+		{
+			"key": "doctor_id",
+			"value": "",
+			"type": "string",
+			"description": "Doctor ID (for doctor users)"
+		},
+		{
+			"key": "patient_id",
+			"value": "",
+			"type": "string",
+			"description": "Patient ID (for patient users)"
+		},
+		{
+			"key": "appointment_id",
+			"value": "",
+			"type": "string",
+			"description": "Current appointment ID for operations"
+		},
+		{
+			"key": "clinic_id",
+			"value": "",
+			"type": "string",
+			"description": "Current clinic ID for operations"
+		},
+		{
+			"key": "schedule_id",
+			"value": "",
+			"type": "string",
+			"description": "Current schedule ID for operations"
+		},
+		{
+			"key": "specific_schedule_id",
+			"value": "",
+			"type": "string",
+			"description": "Specific date schedule ID"
+		},
+		{
+			"key": "new_clinic_id",
+			"value": "",
+			"type": "string",
+			"description": "Newly created clinic ID"
+		}
+	]
+}
